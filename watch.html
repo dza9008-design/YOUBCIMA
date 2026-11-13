@@ -3,117 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاهدة العمل - Youb Cima</title>
+    <title>مشاهدة العرض - Youb Cima</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #141414; color: #fff; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
-        .watch-container { max-width: 1000px; margin: 20px auto; padding: 15px; }
-        .player-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-        .player-wrapper iframe { width: 100%; height: 100%; border: none; }
-        .movie-info-section { background: #1f1f1f; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .movie-title-main { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #fff; }
-        .movie-meta { display: flex; gap: 15px; color: #aaa; font-size: 14px; margin-bottom: 15px; align-items: center; }
-        .badge-tag { background: #e50914; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .movie-desc { color: #ccc; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
-        .actions-bar { display: flex; gap: 15px; align-items: center; }
-        .btn-action { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; }
-        .btn-action:hover { background: #444; }
-        .btn-action.active { background: #e50914; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; margin: 20px; font-size: 16px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
-        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .servers-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .server-btn {
+            background: #1f1f1f;
+            color: #fff;
+            border: 1px solid #333;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .server-btn.active {
+            background: #e50914;
+            border-color: #e50914;
+        }
+        .server-btn:hover {
+            background: #333;
+        }
+        .series-controls {
+            display: none;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            color: #ccc;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .series-select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        .meta-badges {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .meta-badge {
+            background: #222;
+            color: #ddd;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid #333;
+        }
+        .meta-badge.section-tag {
+            background: #e50914;
+            color: #fff;
+            border-color: #e50914;
+            font-weight: bold;
+        }
+        .title-fav-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .fav-action-btn {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .fav-action-btn.active {
+            background: #e50914;
+            border-color: #e50914;
+            color: #fff;
+        }
+        .fav-action-btn:hover {
+            background: #333;
+        }
+        .poster-wrapper {
+            position: relative;
+        }
+        .poster-fav-btn {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: 0.2s;
+            z-index: 5;
+        }
+        .poster-fav-btn.active {
+            color: #e50914;
+            background: rgba(229, 9, 20, 0.2);
+        }
+        .poster-fav-btn:hover {
+            background: rgba(229, 9, 20, 0.8);
+            color: #fff;
+        }
     </style>
 </head>
-<body>
+<body class="mobile-body">
 
-    <a href="index.html" class="back-btn">
-        <i class="fa-solid fa-arrow-right"></i> العودة للرئيسية
-    </a>
-
-    <div class="watch-container">
-        <!-- مشغل الفيديو / الـ Iframe -->
-        <div class="player-wrapper" id="playerWrapper">
-            <iframe id="videoIframe" src="" allowfullscreen></iframe>
+    <!-- النافبار العلوي -->
+    <header class="top-navbar" style="position: sticky; background-color: #000000; top: 0; z-index: 1000;">
+        <div class="nav-right">
+            <a href="index.html" class="logo-container" style="text-decoration: none;">
+                <span class="logo-text">Youb<span>Cima</span></span>
+                <i class="fa-solid fa-film logo-icon"></i>
+            </a>
         </div>
-
-        <!-- معلومات الفيلم أو المسلسل -->
-        <div class="movie-info-section">
-            <h1 class="movie-title-main" id="watchTitle">جاري تحميل البيانات...</h1>
-            <div class="movie-meta">
-                <span class="badge-tag" id="watchBadge">HD</span>
-                <span id="watchYear"><i class="fa-solid fa-calendar"></i> ----</span>
-                <span id="watchRating"><i class="fa-solid fa-star" style="color: gold;"></i> --</span>
+        <div class="nav-left" style="display: flex; align-items: center; gap: 12px;">
+            <!-- زر اختيار اللغات والكرة الأرضية -->
+            <div class="language-switcher-header">
+                <span class="globe-icon">🌐</span>
+                <select id="langSelect" onchange="switchLanguage(this.value)">
+                    <option value="ar-dz">العربية (الجزائر)</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
             </div>
-            <p class="movie-desc" id="watchDesc">يرجى الانتظار ريثما يتم جلب تفاصيل العمل...</p>
-            
-            <div class="actions-bar">
-                <button class="btn-action" id="favWatchBtn" onclick="toggleFavCurrentMovie()">
-                    <i class="fa-solid fa-heart"></i> أضف للمفضلة
-                </button>
-            </div>
+            <a href="index.html" style="color: #ffffff; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-house"></i> <span data-i18n="home">الرئيسية</span>
+            </a>
         </div>
+    </header>
+
+    <!-- شريط تليغرام الأزرق -->
+    <div class="telegram-banner">
+        <a href="#" class="tg-link-text">
+            <i class="fa-brands fa-telegram"></i> <span data-i18n="telegram_channel">قناة Youb Cima على التليغرام</span>
+        </a>
+        <a href="#" class="tg-btn"><span data-i18n="join_now">انضم الآن ←</span></a>
     </div>
 
+    <main class="content-container watch-container" style="max-width: 900px; margin-top: 20px;">
+        
+        <!-- أزرار اختيار السيرفرات -->
+        <div class="servers-box">
+            <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> <span data-i18n="servers_label">السيرفرات:</span></span>
+            <button class="server-btn active" onclick="changeServer(1)">سيرفر 1 (VidLink)</button>
+            <button class="server-btn" onclick="changeServer(2)">سيرفر 2 (Vidsrc)</button>
+            <button class="server-btn" onclick="changeServer(3)">سيرفر 3 (Embed.su)</button>
+            <button class="server-btn" onclick="changeServer(4)">سيرفر 4 (AutoEmbed)</button>
+            <button class="server-btn" onclick="changeServer(5)">سيرفر 5 (2Embed)</button>
+            <button class="server-btn" onclick="changeServer(6)">سيرفر 6 (MultiEmbed)</button>
+        </div>
+
+        <!-- مشغل الفيديو الرئيسي -->
+        <div class="video-player-box" id="playerContainer" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 12px;">
+            <iframe id="videoIframe" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+        </div>
+
+        <!-- لوحة اختيار الموسم والحلقة للمسلسلات -->
+        <div class="series-controls" id="seriesControls">
+            <div class="control-group">
+                <label for="seasonSelect"><i class="fa-solid fa-layer-group"></i> <span data-i18n="season_label">الموسم:</span></label>
+                <select id="seasonSelect" class="series-select"></select>
+            </div>
+            <div class="control-group">
+                <label for="episodeSelect"><i class="fa-solid fa-list-ol"></i> <span data-i18n="episode_label">الحلقة:</span></label>
+                <select id="episodeSelect" class="series-select"></select>
+            </div>
+        </div>
+
+        <!-- تفاصيل ووصف الفيلم مع زر المفضلة -->
+        <div class="movie-description-section" style="margin-top: 20px;">
+            <div class="title-fav-wrapper">
+                <h1 id="movieTitle" class="watch-title" style="margin: 0;" data-i18n="loading_title">جاري التحميل...</h1>
+                <button id="watchFavBtn" class="fav-action-btn" onclick="toggleFavoriteCurrent()">
+                    <i class="fa-solid fa-heart"></i> <span id="favBtnText" data-i18n="add_fav">أضف للمفضلة</span>
+                </button>
+            </div>
+            
+            <div class="meta-badges" id="metaBadges"></div>
+
+            <div id="movieDesc" class="watch-text"></div>
+
+            <!-- أزرار المشاركة -->
+            <div class="share-buttons">
+                <button class="share-btn" title="واتساب"><i class="fa-brands fa-whatsapp"></i></button>
+                <button class="share-btn" title="تليغرام"><i class="fa-brands fa-telegram"></i></button>
+                <button class="share-btn" title="نسخ الرابط"><i class="fa-regular fa-copy"></i></button>
+                <button class="share-btn" title="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>
+            </div>
+        </div>
+
+        <!-- قسم أفلام قد تهمك -->
+        <section class="related-section">
+            <h2 class="section-title" data-i18n="related_title">قد تهمك</h2>
+            <div class="row-cards" id="relatedContainer"></div>
+        </section>
+
+    </main>
+
+    <!-- شريط التنقل السفلي للهواتف -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span data-i18n="home">الرئيسية</span>
+        </a>
+        <a href="index.html?view=search" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span data-i18n="search_bottom">بحث</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-brands fa-telegram"></i>
+            <span>Telegram</span>
+        </a>
+        <a href="index.html?view=favorites" class="nav-item active" id="favBottomNav">
+            <i class="fa-solid fa-heart" style="color: #e50914;"></i>
+            <span data-i18n="favorites">المفضلة</span>
+        </a>
+    </nav>
+
+    <!-- السكربت البرمجي -->
     <script>
+        let currentMovieId = '';
+        let currentMovieType = 'movie';
+        let currentSeason = 1;
+        let currentEpisode = 1;
+        let activeServerNum = 1;
         let currentMovieData = null;
 
-        async function loadWatchPage() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const movieId = urlParams.get('id');
-            const movieType = urlParams.get('type') || 'movie';
-
-            if (!movieId) {
-                document.getElementById('watchTitle').textContent = "عذراً، لم يتم تحديد الفيلم أو المسلسل!";
-                return;
-            }
-
-            try {
-                const response = await fetch('movies.json');
-                const movies = await response.json();
-                
-                // البحث عن العمل المطابق للـ ID
-                const movie = movies.find(m => String(m.id) === String(movieId));
-
-                if (!movie) {
-                    document.getElementById('watchTitle').textContent = "عذراً، لم يتم العثور على هذا العمل!";
-                    return;
-                }
-
-                currentMovieData = movie;
-
-                // تعبئة البيانات في الواجهة
-                document.getElementById('watchTitle').textContent = movie.title;
-                document.getElementById('watchDesc').textContent = movie.overview || "لا توجد قصة متاحة لهذا العمل حالياً.";
-                document.getElementById('watchYear').innerHTML = `<i class="fa-solid fa-calendar"></i> ${movie.year || '2024'}`;
-                document.getElementById('watchRating').innerHTML = `<i class="fa-solid fa-star" style="color: gold;"></i> ${movie.rating || '8.5'}`;
-                
-                const badgeEl = document.getElementById('watchBadge');
-                badgeEl.textContent = movieType === 'tv' ? 'مسلسل' : 'HD';
-
-                // تعبئة رابط المشغل (iframe)
-                const iframe = document.getElementById('videoIframe');
-                if (movie.videoUrl) {
-                    iframe.src = movie.videoUrl;
-                } else if (movieType === 'tv') {
-                    // رابط افتراضي للمسلسلات أو الدمج عبر VidLink/Embed
-                    iframe.src = `https://vidlink.pro/tv/${movie.id}/1/1`;
-                } else {
-                    // رابط افتراضي للأفلام
-                    iframe.src = `https://vidlink.pro/movie/${movie.id}`;
-                }
-
-                // تحديث زر المفضلة
-                updateFavButtonState();
-
-                // حفظ في سجل "أكمل المشاهدة"
-                saveToHistory(movie, movieType);
-
-            } catch (error) {
-                console.error('خطأ في تحميل تفاصيل العمل:', error);
-                document.getElementById('watchTitle').textContent = "حدث خطأ أثناء تحميل البيانات.";
-            }
-        }
-
+        // إدارة المفضلة
         function getFavorites() {
             return JSON.parse(localStorage.getItem('youbcima_favorites') || '[]');
         }
@@ -122,56 +277,274 @@
             return getFavorites().some(item => String(item.id) === String(id));
         }
 
-        function updateFavButtonState() {
-            if (!currentMovieData) return;
-            const btn = document.getElementById('favWatchBtn');
-            const active = isFavorite(currentMovieData.id);
-            if (active) {
-                btn.classList.add('active');
-                btn.innerHTML = `<i class="fa-solid fa-heart"></i> إزالة من المفضلة`;
-            } else {
-                btn.classList.remove('active');
-                btn.innerHTML = `<i class="fa-solid fa-heart"></i> أضف للمفضلة`;
-            }
-        }
-
-        function toggleFavCurrentMovie() {
-            if (!currentMovieData) return;
+        function toggleFavorite(movie) {
             let favs = getFavorites();
-            const index = favs.findIndex(item => String(item.id) === String(currentMovieData.id));
+            const index = favs.findIndex(item => String(item.id) === String(movie.id));
             if (index > -1) {
                 favs.splice(index, 1);
             } else {
                 favs.push({
-                    id: currentMovieData.id,
-                    title: currentMovieData.title,
-                    poster: currentMovieData.poster,
-                    type: currentMovieData.type || 'movie',
-                    year: currentMovieData.year || '',
-                    rating: currentMovieData.rating || ''
+                    id: movie.id,
+                    title: movie.title,
+                    poster: movie.poster,
+                    type: movie.type || 'movie',
+                    year: movie.year || '',
+                    rating: movie.rating || ''
                 });
             }
             localStorage.setItem('youbcima_favorites', JSON.stringify(favs));
-            updateFavButtonState();
+            updateFavButtonsUI();
         }
 
-        function saveToHistory(movie, type) {
+        function toggleFavoriteCurrent() {
+            if (currentMovieData) {
+                toggleFavorite(currentMovieData);
+            }
+        }
+
+        function updateFavButtonsUI() {
+            const btn = document.getElementById('watchFavBtn');
+            const txt = document.getElementById('favBtnText');
+            if (!btn || !currentMovieId) return;
+
+            if (isFavorite(currentMovieId)) {
+                btn.classList.add('active');
+                txt.textContent = siteTranslations[currentLang]?.remove_fav || (currentLang === 'fr' ? 'Retirer des favoris' : currentLang === 'en' ? 'Remove from Favorites' : 'إزالة من المفضلة');
+            } else {
+                btn.classList.remove('active');
+                txt.textContent = siteTranslations[currentLang]?.add_fav || (currentLang === 'fr' ? 'Ajouter aux favoris' : currentLang === 'en' ? 'Add to Favorites' : 'أضف للمفضلة');
+            }
+        }
+
+        // سجل المشاهدة (أكمل المشاهدة)
+        function saveToHistory() {
+            if (!currentMovieData) return;
             let history = JSON.parse(localStorage.getItem('youbcima_history') || '[]');
-            // إزالة العمل إذا كان موجوداً مسبقاً لإضافته في المقدمة
-            history = history.filter(item => String(item.id) !== String(movie.id));
+            history = history.filter(item => String(item.id) !== String(currentMovieId));
+            
             history.unshift({
-                id: movie.id,
-                title: movie.title,
-                poster: movie.poster,
-                type: type,
-                season: 1,
-                episode: 1
+                id: currentMovieId,
+                title: currentMovieData.title,
+                poster: currentMovieData.poster,
+                type: currentMovieType,
+                season: currentSeason,
+                episode: currentEpisode,
+                timestamp: Date.now()
             });
-            if (history.length > 10) history.pop(); // الاحتفاظ بآخر 10 أعمال فقط
+
+            if (history.length > 10) history.pop();
             localStorage.setItem('youbcima_history', JSON.stringify(history));
         }
 
-        document.addEventListener('DOMContentLoaded', loadWatchPage);
+        function updatePlayer() {
+            const iframe = document.getElementById('videoIframe');
+            if (!currentMovieId) return;
+
+            if (activeServerNum === 1) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    iframe.src = `https://vidlink.pro/movie/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 2) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`;
+                } else {
+                    iframe.src = `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
+                }
+            } else if (activeServerNum === 3) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    iframe.src = `https://embed.su/embed/movie/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 4) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    iframe.src = `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 5) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`;
+                } else {
+                    iframe.src = `https://2embed.cc/embed/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 6) {
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`;
+                } else {
+                    iframe.src = `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1`;
+                }
+            }
+
+            saveToHistory();
+        }
+
+        function changeServer(num) {
+            activeServerNum = num;
+            document.querySelectorAll('.server-btn').forEach((btn, idx) => {
+                if (idx + 1 === num) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            updatePlayer();
+        }
+
+        // دالة مخصصة لتبديل اللغات داخل صفحة المشاهدة وتحديث النصوص الفورية
+        function switchLanguage(lang) {
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(lang);
+            }
+            updateFavButtonsUI();
+            
+            // إعادة بناء خيارات المواسم والحلقات بلغة القائمة الجديدة
+            const seasonSelect = document.getElementById('seasonSelect');
+            const episodeSelect = document.getElementById('episodeSelect');
+            if (seasonSelect && episodeSelect) {
+                const currentS = seasonSelect.value;
+                const currentE = episodeSelect.value;
+                
+                seasonSelect.innerHTML = '';
+                episodeSelect.innerHTML = '';
+                for (let s = 1; s <= 10; s++) {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = (currentLang === 'fr' ? 'Saison ' : currentLang === 'en' ? 'Season ' : 'الموسم ') + s;
+                    if (String(s) === String(currentS)) opt.selected = true;
+                    seasonSelect.appendChild(opt);
+                }
+                for (let e = 1; e <= 50; e++) {
+                    const opt = document.createElement('option');
+                    opt.value = e;
+                    opt.textContent = (currentLang === 'fr' ? 'Épisode ' : currentLang === 'en' ? 'Episode ' : 'الحلقة ') + e;
+                    if (String(e) === String(currentE)) opt.selected = true;
+                    episodeSelect.appendChild(opt);
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let savedLang = localStorage.getItem('user_lang');
+            if (!savedLang) {
+                let phoneLang = navigator.language || navigator.userLanguage;
+                if (phoneLang.startsWith('ar')) savedLang = 'ar-dz';
+                else if (phoneLang.startsWith('fr')) savedLang = 'fr';
+                else if (phoneLang.startsWith('es')) savedLang = 'es';
+                else savedLang = 'en';
+            }
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(savedLang);
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            currentMovieId = urlParams.get('id');
+            currentMovieType = urlParams.get('type') || 'movie';
+            const savedSeason = urlParams.get('s');
+            const savedEpisode = urlParams.get('e');
+
+            if (savedSeason) currentSeason = savedSeason;
+            if (savedEpisode) currentEpisode = savedEpisode;
+
+            if (currentMovieId) {
+                const seriesControls = document.getElementById('seriesControls');
+                const seasonSelect = document.getElementById('seasonSelect');
+                const episodeSelect = document.getElementById('episodeSelect');
+
+                if (currentMovieType === 'tv') {
+                    if (seriesControls) seriesControls.style.display = 'flex';
+                    
+                    if (seasonSelect && episodeSelect) {
+                        seasonSelect.innerHTML = '';
+                        episodeSelect.innerHTML = '';
+                        for (let s = 1; s <= 10; s++) {
+                            const opt = document.createElement('option');
+                            opt.value = s;
+                            opt.textContent = (currentLang === 'fr' ? 'Saison ' : currentLang === 'en' ? 'Season ' : 'الموسم ') + s;
+                            if (String(s) === String(currentSeason)) opt.selected = true;
+                            seasonSelect.appendChild(opt);
+                        }
+                        for (let e = 1; e <= 50; e++) {
+                            const opt = document.createElement('option');
+                            opt.value = e;
+                            opt.textContent = (currentLang === 'fr' ? 'Épisode ' : currentLang === 'en' ? 'Episode ' : 'الحلقة ') + e;
+                            if (String(e) === String(currentEpisode)) opt.selected = true;
+                            episodeSelect.appendChild(opt);
+                        }
+
+                        seasonSelect.onchange = (e) => {
+                            currentSeason = e.target.value;
+                            updatePlayer();
+                        };
+                        episodeSelect.onchange = (e) => {
+                            currentEpisode = e.target.value;
+                            updatePlayer();
+                        };
+                    }
+                } else {
+                    if (seriesControls) seriesControls.style.display = 'none';
+                }
+
+                // جلب بيانات العمل من movies.json
+                fetch('movies.json')
+                    .then(response => response.json())
+                    .then(movies => {
+                        const movie = movies.find(m => String(m.id) === String(currentMovieId));
+                        if (movie) {
+                            currentMovieData = movie;
+                            const titleEl = document.getElementById('movieTitle');
+                            const descEl = document.getElementById('movieDesc');
+                            if (titleEl) titleEl.textContent = movie.title || "بدون عنوان";
+                            if (descEl) descEl.textContent = movie.overview || siteTranslations[currentLang]?.no_overview || "لا يوجد وصف متوفر.";
+
+                            const badgesContainer = document.getElementById('metaBadges');
+                            if (badgesContainer) {
+                                let badgesHTML = '';
+                                if (movie.section) badgesHTML += `<span class="meta-badge section-tag">${movie.section}</span>`;
+                                if (movie.year) badgesHTML += `<span class="meta-badge"><i class="fa-regular fa-calendar"></i> ${movie.year}</span>`;
+                                if (movie.rating) badgesHTML += `<span class="meta-badge"><i class="fa-solid fa-star" style="color:#f5c518;"></i> ${movie.rating}</span>`;
+                                badgesContainer.innerHTML = badgesHTML;
+                            }
+                            updateFavButtonsUI();
+                        }
+
+                        updatePlayer();
+
+                        // تعبئة قسم "قد تهمك" مع زر المفضلة على البوستر
+                        const relatedContainer = document.getElementById('relatedContainer');
+                        if (relatedContainer) {
+                            relatedContainer.innerHTML = '';
+                            movies.filter(m => String(m.id) !== String(currentMovieId)).forEach(m => {
+                                const card = document.createElement('div');
+                                card.className = 'movie-card';
+                                const badgeText = (m.type === 'tv') ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD';
+                                const favActive = isFavorite(m.id) ? 'active' : '';
+
+                                card.innerHTML = `
+                                    <div class="poster-wrapper">
+                                        <button class="poster-fav-btn ${favActive}" onclick="event.stopPropagation(); toggleFavQuick(this, ${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                                            <i class="fa-solid fa-heart"></i>
+                                        </button>
+                                        <img src="${m.poster}" alt="${m.title}">
+                                        <span class="badge-hd">${badgeText}</span>
+                                    </div>
+                                    <div class="movie-title">${m.title}</div>
+                                `;
+                                card.onclick = () => {
+                                    window.location.href = `watch.html?id=${m.id}&type=${m.type || 'movie'}`;
+                                };
+                                relatedContainer.appendChild(card);
+                            });
+                        }
+                    })
+                    .catch(error => console.error("خطأ في تحميل تفاصيل الفيلم:", error));
+            }
+        });
+
+        function toggleFavQuick(btn, movie) {
+            toggleFavorite(movie);
+            btn.classList.toggle('active', isFavorite(movie.id));
+        }
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
