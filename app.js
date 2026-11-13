@@ -316,7 +316,7 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
-        // تحديد القسم الحقيقي الذي يحوي trendingRow وإظهاره وإخفاء الباقي بدقة
+        // إظهار القسم الخاص بـ trendingRow حصرياً وإخفاء بقية الأقسام وأكمل المشاهدة
         const trendingSec = trendingRow?.closest('.row-section');
         allSections.forEach((sec) => {
             if (sec === trendingSec) {
