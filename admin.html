@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم Youb Cima - الإحصائيات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background-color: #141414;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        /* شاشة تسجيل الدخول بالرقم السري */
+        #login-screen {
+            background: #1f1f1f;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            border: 1px solid #333;
+        }
+        #login-screen h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #fff;
+        }
+        #login-screen input {
+            width: 100%;
+            padding: 12px;
+            background: #141414;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        #login-screen button {
+            width: 100%;
+            padding: 12px;
+            background: #e50914;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #login-screen button:hover {
+            background: #b20710;
+        }
+        .error-msg {
+            color: #e50914;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* لوحة التحكم الرئيسية (مخفية حتى يتم تسجيل الدخول) */
+        #dashboard-content {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            background: #181818;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            border: 1px solid #282828;
+        }
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .dash-header h1 {
+            font-size: 22px;
+            color: #fff;
+        }
+        .dash-header h1 span {
+            color: #e50914;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #e50914;
+            color: #e50914;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover {
+            background: #e50914;
+            color: #fff;
+        }
+
+        /* شبكة الإحصائيات والبطاقات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e50914;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* قسم معلومات النظام */
+        .system-info {
+            background: #202020;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+        .system-info p {
+            margin-bottom: 8px;
+        }
+        .system-info p i {
+            color: #e50914;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة إدخال الرمز السري -->
+    <div id="login-screen">
+        <h2><i class="fa-solid fa-lock" style="color: #e50914; margin-bottom: 10px; display: block; font-size: 30px;"></i> لوحة التحكم الإدارية</h2>
+        <input type="password" id="pin-input" placeholder="أدخل الرمز السري (الافتراضي: 1234)">
+        <button onclick="checkPin()">دخول</button>
+        <div id="error-msg" class="error-msg">الرمز السري غير صحيح!</div>
+    </div>
+
+    <!-- محتوى الإحصائيات -->
+    <div id="dashboard-content">
+        <div class="dash-header">
+            <h1>Youb Cima <span>Dashboard</span></h1>
+            <button class="logout-btn" onclick="logout()">خروج</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>إجمالي الأفلام</h3>
+                <div class="number" id="total-movies">جاري التحميل...</div>
+            </div>
+            <div class="stat-card">
+                <h3>إجمالي المسلسلات</h3>
+                <div class="number" id="total-series">جاري التحميل...</div>
+            </div>
+            <div class="stat-card">
+                <h3>إجمالي الأنمي</h3>
+                <div class="number" id="total-anime">جاري التحميل...</div>
+            </div>
+            <div class="stat-card">
+                <h3>إجمالي الأعمال بالموقع</h3>
+                <div class="number" id="total-items">جاري التحميل...</div>
+            </div>
+        </div>
+
+        <div class="system-info">
+            <p><i class="fa-solid fa-robot"></i> <strong>حالة بوت الأتمتة:</strong> يعمل تلقائياً عبر GitHub Actions كل ساعتين.</p>
+            <p><i class="fa-solid fa-database"></i> <strong>مصدر البيانات:</strong> ملف <code>movies.json</code> المحلي.</p>
+            <p><i class="fa-solid fa-circle-check" style="color: #46d369;"></i> <strong>حالة النظام:</strong> الموقع متصل ومحدث وجاهز للعمل.</p>
+        </div>
+    </div>
+
+    <script>
+        // الرمز السري الخاص بك (يمكنك تغليقه وتغييره هنا متى شئت، مثلاً بدلاً من 1234)
+        const ADMIN_PIN = "1234";
+
+        function checkPin() {
+            const enteredPin = document.getElementById('pin-input').value;
+            if (enteredPin === ADMIN_PIN) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                loadStats();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            document.getElementById('dashboard-content').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('error-msg').style.display = 'none';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('movies.json');
+                const movies = await response.json();
+
+                const totalItems = movies.length;
+                const moviesCount = movies.filter(m => m.type === 'movie' && m.section !== 'أنمي').length;
+                const seriesCount = movies.filter(m => m.type === 'tv' && m.section !== 'أنمي').length;
+                const animeCount = movies.filter(m => m.section === 'أنمي' || (m.genres && m.genres.includes('أنمي وكرتون'))).length;
+
+                document.getElementById('total-items').textContent = totalItems;
+                document.getElementById('total-movies').textContent = moviesCount;
+                document.getElementById('total-series').textContent = seriesCount;
+                document.getElementById('total-anime').textContent = animeCount;
+
+            } catch (error) {
+                console.error('خطأ في جلب الإحصائيات:', error);
+                document.getElementById('total-items').textContent = 'خطأ';
+            }
+        }
+    </script>
+</body>
+</html>
