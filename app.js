@@ -232,7 +232,7 @@ function switchLanguage(lang) {
     } else if (!window.location.pathname.includes('watch.html')) {
         initApp();
     } else {
-        location.reload(); // إعادة تحميل خفيفة لترجمة صفحة المشاهدة بالكامل عند التبديل الفوري
+        location.reload(); 
     }
 }
 
@@ -285,7 +285,7 @@ async function loadMovies() {
     }
 }
 
-// دالة إنشاء كرت العمل مع زر المفضلة السريع على البوستر
+// دالة إنشاء كرت العمل مع زر المفضلة السريع على البوستر (مصححة)
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
@@ -306,8 +306,10 @@ function createMovieCard(movie) {
         <div class="movie-title">${movie.title}</div>
     `;
     
+    // التعديل السليم هنا لضمان الانتقال لصفحة المشاهدة بالمعرف والنوع
     card.onclick = () => {
-        window.location.href = `watch.html?id=${movie.id}&type=${movie.type || 'movie'}`;
+        const movieType = movie.type || (movie.section && movie.section.includes('مسلسل') ? 'tv' : 'movie');
+        window.location.href = `watch.html?id=${movie.id}&type=${movieType}`;
     };
     return card;
 }
@@ -472,10 +474,10 @@ function initApp() {
         }
     });
 
-    renderRow('trendingRow');                  // الأكثر شهرة والأحدث
-    renderRow('turkishSeriesRow', null, null, 'tv'); // مسلسلات
-    renderRow('arabicMoviesRow', null, null, 'movie'); // أفلام
-    renderRow('animeRow', 'أنمي');                // أنمي وكرتون
+    renderRow('trendingRow');                  
+    renderRow('turkishSeriesRow', null, null, 'tv'); 
+    renderRow('arabicMoviesRow', null, null, 'movie'); 
+    renderRow('animeRow', 'أنمي');                
 
     const seriesSubBar = document.getElementById('seriesSubBar');
     const subCategoriesBar = document.getElementById('subCategoriesBar');
@@ -493,7 +495,8 @@ function initApp() {
 
         if (heroPlayBtn) {
             heroPlayBtn.onclick = () => {
-                window.location.href = `watch.html?id=${featured.id}&type=${featured.type || 'movie'}`;
+                const featuredType = featured.type || (featured.section && featured.section.includes('مسلسل') ? 'tv' : 'movie');
+                window.location.href = `watch.html?id=${featured.id}&type=${featuredType}`;
             };
         }
     }
