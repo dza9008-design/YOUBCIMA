@@ -155,9 +155,19 @@
                 <i class="fa-solid fa-film logo-icon"></i>
             </a>
         </div>
-        <div class="nav-left">
-            <a href="index.html" style="color: #ffffff; text-decoration: none; font-size: 14px;">
-                <i class="fa-solid fa-house"></i> الرئيسية
+        <div class="nav-left" style="display: flex; align-items: center; gap: 12px;">
+            <!-- زر اختيار اللغات والكرة الأرضية -->
+            <div class="language-switcher-header">
+                <span class="globe-icon">🌐</span>
+                <select id="langSelect" onchange="switchLanguage(this.value)">
+                    <option value="ar-dz">العربية (الجزائر)</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+            <a href="index.html" style="color: #ffffff; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-house"></i> <span data-i18n="home">الرئيسية</span>
             </a>
         </div>
     </header>
@@ -165,16 +175,16 @@
     <!-- شريط تليغرام الأزرق -->
     <div class="telegram-banner">
         <a href="#" class="tg-link-text">
-            <i class="fa-brands fa-telegram"></i> قناة Youb Cima على التليغرام
+            <i class="fa-brands fa-telegram"></i> <span data-i18n="telegram_channel">قناة Youb Cima على التليغرام</span>
         </a>
-        <a href="#" class="tg-btn">انضم الآن ←</a>
+        <a href="#" class="tg-btn"><span data-i18n="join_now">انضم الآن ←</span></a>
     </div>
 
     <main class="content-container watch-container" style="max-width: 900px; margin-top: 20px;">
         
         <!-- أزرار اختيار السيرفرات -->
         <div class="servers-box">
-            <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> السيرفرات:</span>
+            <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> <span data-i18n="servers_label">السيرفرات:</span></span>
             <button class="server-btn active" onclick="changeServer(1)">سيرفر 1 (VidLink)</button>
             <button class="server-btn" onclick="changeServer(2)">سيرفر 2 (Vidsrc)</button>
             <button class="server-btn" onclick="changeServer(3)">سيرفر 3 (Embed.su)</button>
@@ -191,11 +201,11 @@
         <!-- لوحة اختيار الموسم والحلقة للمسلسلات -->
         <div class="series-controls" id="seriesControls">
             <div class="control-group">
-                <label for="seasonSelect"><i class="fa-solid fa-layer-group"></i> الموسم:</label>
+                <label for="seasonSelect"><i class="fa-solid fa-layer-group"></i> <span data-i18n="season_label">الموسم:</span></label>
                 <select id="seasonSelect" class="series-select"></select>
             </div>
             <div class="control-group">
-                <label for="episodeSelect"><i class="fa-solid fa-list-ol"></i> الحلقة:</label>
+                <label for="episodeSelect"><i class="fa-solid fa-list-ol"></i> <span data-i18n="episode_label">الحلقة:</span></label>
                 <select id="episodeSelect" class="series-select"></select>
             </div>
         </div>
@@ -203,9 +213,9 @@
         <!-- تفاصيل ووصف الفيلم مع زر المفضلة -->
         <div class="movie-description-section" style="margin-top: 20px;">
             <div class="title-fav-wrapper">
-                <h1 id="movieTitle" class="watch-title" style="margin: 0;">عنوان الفيلم</h1>
+                <h1 id="movieTitle" class="watch-title" style="margin: 0;" data-i18n="loading_title">جاري التحميل...</h1>
                 <button id="watchFavBtn" class="fav-action-btn" onclick="toggleFavoriteCurrent()">
-                    <i class="fa-solid fa-heart"></i> <span id="favBtnText">أضف للمفضلة</span>
+                    <i class="fa-solid fa-heart"></i> <span id="favBtnText" data-i18n="add_fav">أضف للمفضلة</span>
                 </button>
             </div>
             
@@ -224,21 +234,21 @@
 
         <!-- قسم أفلام قد تهمك -->
         <section class="related-section">
-            <h2 class="section-title">قد تهمك</h2>
+            <h2 class="section-title" data-i18n="related_title">قد تهمك</h2>
             <div class="row-cards" id="relatedContainer"></div>
         </section>
 
     </main>
 
-    <!-- شريط التنقل السفلي للهواتف (تم استبدال المزيد بالمفضلة) -->
+    <!-- شريط التنقل السفلي للهواتف -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
             <i class="fa-solid fa-house"></i>
-            <span>الرئيسية</span>
+            <span data-i18n="home">الرئيسية</span>
         </a>
         <a href="index.html?view=search" class="nav-item">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <span>بحث</span>
+            <span data-i18n="search_bottom">بحث</span>
         </a>
         <a href="#" class="nav-item">
             <i class="fa-brands fa-telegram"></i>
@@ -246,11 +256,11 @@
         </a>
         <a href="index.html?view=favorites" class="nav-item active" id="favBottomNav">
             <i class="fa-solid fa-heart" style="color: #e50914;"></i>
-            <span>المفضلة</span>
+            <span data-i18n="favorites">المفضلة</span>
         </a>
     </nav>
 
-    <!-- السكربت البرمجي المحدث -->
+    <!-- السكربت البرمجي -->
     <script>
         let currentMovieId = '';
         let currentMovieType = 'movie';
@@ -300,10 +310,10 @@
 
             if (isFavorite(currentMovieId)) {
                 btn.classList.add('active');
-                txt.textContent = 'إزالة من المفضلة';
+                txt.textContent = siteTranslations[currentLang]?.remove_fav || (currentLang === 'fr' ? 'Retirer des favoris' : currentLang === 'en' ? 'Remove from Favorites' : 'إزالة من المفضلة');
             } else {
                 btn.classList.remove('active');
-                txt.textContent = 'أضف للمفضلة';
+                txt.textContent = siteTranslations[currentLang]?.add_fav || (currentLang === 'fr' ? 'Ajouter aux favoris' : currentLang === 'en' ? 'Add to Favorites' : 'أضف للمفضلة');
             }
         }
 
@@ -382,6 +392,19 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // تفعيل اللغة المخزنة أو لغة الجهاز تلقائياً
+            let savedLang = localStorage.getItem('user_lang');
+            if (!savedLang) {
+                let phoneLang = navigator.language || navigator.userLanguage;
+                if (phoneLang.startsWith('ar')) savedLang = 'ar-dz';
+                else if (phoneLang.startsWith('fr')) savedLang = 'fr';
+                else if (phoneLang.startsWith('es')) savedLang = 'es';
+                else savedLang = 'en';
+            }
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(savedLang);
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             currentMovieId = urlParams.get('id');
             currentMovieType = urlParams.get('type') || 'movie';
@@ -405,14 +428,14 @@
                         for (let s = 1; s <= 10; s++) {
                             const opt = document.createElement('option');
                             opt.value = s;
-                            opt.textContent = `الموسم ${s}`;
+                            opt.textContent = (currentLang === 'fr' ? 'Saison ' : currentLang === 'en' ? 'Season ' : 'الموسم ') + s;
                             if (String(s) === String(currentSeason)) opt.selected = true;
                             seasonSelect.appendChild(opt);
                         }
                         for (let e = 1; e <= 50; e++) {
                             const opt = document.createElement('option');
                             opt.value = e;
-                            opt.textContent = `الحلقة ${e}`;
+                            opt.textContent = (currentLang === 'fr' ? 'Épisode ' : currentLang === 'en' ? 'Episode ' : 'الحلقة ') + e;
                             if (String(e) === String(currentEpisode)) opt.selected = true;
                             episodeSelect.appendChild(opt);
                         }
@@ -440,7 +463,7 @@
                             const titleEl = document.getElementById('movieTitle');
                             const descEl = document.getElementById('movieDesc');
                             if (titleEl) titleEl.textContent = movie.title || "بدون عنوان";
-                            if (descEl) descEl.textContent = movie.overview || "لا يوجد وصف متوفر.";
+                            if (descEl) descEl.textContent = movie.overview || siteTranslations[currentLang]?.no_overview || "لا يوجد وصف متوفر.";
 
                             const badgesContainer = document.getElementById('metaBadges');
                             if (badgesContainer) {
@@ -462,7 +485,7 @@
                             movies.filter(m => String(m.id) !== String(currentMovieId)).forEach(m => {
                                 const card = document.createElement('div');
                                 card.className = 'movie-card';
-                                const badgeText = (m.type === 'tv') ? 'مسلسل' : 'HD';
+                                const badgeText = (m.type === 'tv') ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD';
                                 const favActive = isFavorite(m.id) ? 'active' : '';
 
                                 card.innerHTML = `
