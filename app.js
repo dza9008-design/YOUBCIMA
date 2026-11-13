@@ -24,6 +24,11 @@ function renderRow(containerId, sectionName = null, genreName = null, typeFilter
     
     container.innerHTML = '';
     
+    // التأكد من أن حاوية الصفوف الرئيسية تستخدم التمرير الأفقي (Flex)
+    container.style.display = 'flex';
+    container.style.gridTemplateColumns = '';
+    container.style.gap = '15px';
+    
     let filteredMovies = movies;
     if (sectionName) {
         filteredMovies = movies.filter(item => item.section === sectionName);
@@ -143,7 +148,6 @@ function setupCategoryFilter() {
 
         // 3. الفلترة أو الترتيب حسب "الأحدث" أو تصنيفات IMDb الفرعية (السطر الثالث)
         if (currentGenre === 'latest') {
-            // ترتيب الأعمال من الأحدث (عكس المصفوفة لتعرض أحدث المضافات أولاً)
             filtered = [...filtered].reverse();
             sectionLabel += ` - الأحدث`;
         } else if (currentGenre !== 'all') {
@@ -168,6 +172,7 @@ function setupCategoryFilter() {
         if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${sectionLabel}`;
 
         if (trendingRow) {
+            // تطبيق شبكة 3 بوسترات في السطر حصرياً عند تصفح الأقسام
             trendingRow.style.display = 'grid';
             trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
             trendingRow.style.gap = '8px';
@@ -297,6 +302,7 @@ function setupSearch() {
         if (titleEl) titleEl.textContent = `نتائج البحث: "${searchInput.value}"`;
 
         if (trendingRow) {
+            // تطبيق شبكة 3 بوسترات عند البحث أيضاً
             trendingRow.style.display = 'grid';
             trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
             trendingRow.style.gap = '8px';
