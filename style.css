@@ -195,7 +195,7 @@ body {
     transform: scale(1.03);
 }
 
-/* السطر الأول: الأقسام الأساسية */
+/* الأقسام الأساسية */
 .categories-bar {
     display: flex;
     align-items: center;
@@ -242,7 +242,7 @@ body {
     box-shadow: 0 4px 14px rgba(229, 9, 20, 0.4);
 }
 
-/* السطر الثاني: تصنيفات المسلسلات الفرعية */
+/* تصنيفات المسلسلات الفرعية */
 .series-sub-bar {
     display: flex;
     align-items: center;
@@ -287,7 +287,7 @@ body {
     box-shadow: 0 2px 10px rgba(229, 9, 20, 0.3);
 }
 
-/* السطر الثالث: تصنيفات IMDb والقائمة المنسدلة */
+/* تصنيفات IMDb والقائمة المنسدلة */
 .sub-categories-bar {
     display: flex;
     align-items: center;
@@ -375,7 +375,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* حاوية المحتوى وشبكة البوسترات (3 في كل سطر) */
+/* حاوية المحتوى والصفوف (تمرير جانبي افتراضي للصفحة الرئيسية) */
 .content-container {
     padding: 0 20px;
     margin-bottom: 50px;
@@ -393,24 +393,28 @@ body {
     color: #e5e5e5;
 }
 
-/* تحويل صف الأفلام إلى شبكة Grid تتسع لـ 3 بوسترات في السطر */
 .row-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 5px 0;
-    overflow-x: visible;
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px 0;
+    scrollbar-width: none;
+}
+
+.row-cards::-webkit-scrollbar {
+    display: none;
 }
 
 .movie-card {
-    width: 100%;
-    min-width: unset;
+    min-width: 160px;
+    width: 160px;
     background-color: #181818;
     border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex-shrink: 0;
 }
 
 .movie-card:hover {
@@ -618,7 +622,7 @@ body {
     }
 
     .categories-bar {
-        margin: 10px 15px 10px 15px;
+        margin: 10px 15px;
         gap: 8px;
     }
 
@@ -663,22 +667,14 @@ body {
         font-size: 15px;
     }
 
-    /* ضمان ظهور 3 بوسترات في السطر حتى على شاشات الهواتف الصغيرة */
     .row-cards {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
+        display: flex;
+        gap: 10px;
     }
 
-    .movie-title {
-        font-size: 10px;
-        padding: 6px 4px;
-    }
-
-    .badge-hd {
-        font-size: 7px;
-        padding: 1px 3px;
-        top: 4px;
-        right: 4px;
+    .movie-card {
+        min-width: 130px;
+        width: 130px;
     }
 
     .bottom-nav {
