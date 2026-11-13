@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youb Cima - متعة المشاهدة</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- الهيدر العلوي بنمط ناتفليكس -->
+    <header class="top-navbar">
+        <div class="nav-right">
+            <a href="index.html" class="logo-container">
+                <span class="logo-text">Youb<span>Cima</span></span>
+                <i class="fa-solid fa-film logo-icon"></i>
+            </a>
+            <nav class="desktop-menu">
+                <a href="index.html" class="active">الرئيسية</a>
+            </nav>
+        </div>
+
+        <div class="nav-left">
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="ابحث عن فيلم أو مسلسل...">
+            </div>
+        </div>
+    </header>
+
+    <!-- قسم الهيرو البارز (Featured Showcase) -->
+    <section class="hero-section" id="heroSection">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="hero-badge"><i class="fa-solid fa-fire"></i> الأكثر مشاهدة اليوم</span>
+            <h1 class="hero-title" id="heroTitle">جاري التحميل...</h1>
+            <p class="hero-description" id="heroDesc">
+                استمتع بأحدث الأفلام والمسلسلات بجودة عالية حصرياً على Youb Cima.
+            </p>
+            <div class="hero-buttons">
+                <button class="btn btn-play" id="heroPlayBtn">
+                    <i class="fa-solid fa-play"></i> تشغيل الآن
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- السطر الأول: الأقسام الأساسية (الكل، أفلام، مسلسلات، أنمي) -->
+    <div class="categories-bar" id="categoriesBar">
+        <button class="cat-btn active" data-section="all">الكل</button>
+        <button class="cat-btn" data-section="movies">أفلام</button>
+        <button class="cat-btn" data-section="tv">مسلسلات</button>
+        <button class="cat-btn" data-section="أنمي">أنمي</button>
+    </div>
+
+    <!-- السطر الثاني: تصنيفات المسلسلات حسب الدولة/اللغة (يظهر عند اختيار "مسلسلات" فقط) -->
+    <div class="series-sub-bar" id="seriesSubBar" style="display: none;">
+        <button class="series-sub-btn active" data-series-type="all">الكل</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات عربية">مسلسلات عربية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات تركية">مسلسلات تركية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات كورية">مسلسلات كورية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات أجنبية">مسلسلات أجنبية</button>
+    </div>
+
+    <!-- السطر الثالث: زر الأحدث + تصنيفات IMDb الفرعية + القائمة المنسدلة للسنة (للأفلام) -->
+    <div class="sub-categories-bar" id="subCategoriesBar" style="display: none;">
+        <div class="genres-scroll">
+            <button class="sub-cat-btn active" data-genre="all">الكل</button>
+            <button class="sub-cat-btn" data-genre="latest"><i class="fa-solid fa-bolt"></i> الأحدث</button>
+            <button class="sub-cat-btn" data-genre="أكشن">أكشن</button>
+            <button class="sub-cat-btn" data-genre="رعب">رعب</button>
+            <button class="sub-cat-btn" data-genre="دراما">دراما</button>
+            <button class="sub-cat-btn" data-genre="كوميديا">كوميديا</button>
+            <button class="sub-cat-btn" data-genre="خيال علمي">خيال علمي</button>
+            <button class="sub-cat-btn" data-genre="إثارة">إثارة</button>
+            <button class="sub-cat-btn" data-genre="مغامرة">مغامرة</button>
+        </div>
+
+        <!-- قائمة منسدلة لسنة الإنتاج (تظهر في الأفلام فقط) -->
+        <div class="dropdown-filter-container" id="yearDropdownContainer" style="display: none;">
+            <select id="yearSelect" class="netflix-dropdown">
+                <option value="all">سنة الإنتاج: الكل</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022 فما قبل</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- صفوف الأفلام والمسلسلات الأفقية حسب الأقسام -->
+    <main class="content-container">
+        
+        <section class="row-section">
+            <h2 class="row-title"><i class="fa-solid fa-fire"></i> الأكثر شهرة والأحدث</h2>
+            <div class="row-cards" id="trendingRow"></div>
+        </section>
+
+        <section class="row-section">
+            <h2 class="row-title"><i class="fa-solid fa-tv"></i> مسلسلات</h2>
+            <div class="row-cards" id="turkishSeriesRow"></div>
+        </section>
+
+        <section class="row-section">
+            <h2 class="row-title"><i class="fa-solid fa-clapperboard"></i> أفلام</h2>
+            <div class="row-cards" id="arabicMoviesRow"></div>
+        </section>
+
+        <section class="row-section">
+            <h2 class="row-title"><i class="fa-solid fa-dragon"></i> أنمي وكرتون</h2>
+            <div class="row-cards" id="animeRow"></div>
+        </section>
+
+    </main>
+
+    <!-- شريط التنقل السفلي للهواتف -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="#searchInput" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>بحث</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>المزيد</span>
+        </a>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
