@@ -134,7 +134,7 @@ function renderContinueWatching() {
         cwSection.className = 'row-section';
         cwSection.style.marginBottom = '25px';
         cwSection.innerHTML = `
-            <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> أكمل المشاهدة</h2>
+            <h2 class="row-title"><i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> أكمل المشاهدة</h2>
             <div class="row-cards" id="continueWatchingRow" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;"></div>
         `;
         const firstRow = mainContainer.querySelector('.row-section');
@@ -194,7 +194,7 @@ function renderFavoritesView() {
         favSection.id = 'favoritesViewSection';
         favSection.style.padding = '20px';
         favSection.innerHTML = `
-            <h2 class="section-title" style="margin-bottom: 20px; font-size: 20px; color: #fff;"><i class="fa-solid fa-heart" style="color: #e50914;"></i> قائمة المفضلة</h2>
+            <h2 class="row-title" style="margin-bottom: 20px; font-size: 20px; color: #fff;"><i class="fa-solid fa-heart" style="color: #e50914;"></i> قائمة المفضلة</h2>
             <div id="favoritesGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></div>
         `;
         const mainContainer = document.querySelector('.content-container') || document.body;
@@ -309,6 +309,7 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
+        // إخفاء جميع الأقسام ما عدا قسم النتائج الأول
         allSections.forEach((sec) => {
             if (sec.id === 'continueWatchingSection') {
                 sec.style.display = 'none';
