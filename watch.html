@@ -18,7 +18,7 @@
             background: #1f1f1f;
             color: #fff;
             border: 1px solid #333;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 13px;
@@ -112,13 +112,15 @@
 
     <main class="content-container watch-container" style="max-width: 900px; margin-top: 20px;">
         
-        <!-- أزرار اختيار السيرفرات (VidLink هو الأول) -->
+        <!-- أزرار اختيار السيرفرات موسعة -->
         <div class="servers-box">
             <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> السيرفرات:</span>
             <button class="server-btn active" onclick="changeServer(1)">سيرفر 1 (VidLink)</button>
             <button class="server-btn" onclick="changeServer(2)">سيرفر 2 (Vidsrc)</button>
-            <button class="server-btn" onclick="changeServer(3)">سيرفر 3 (2Embed)</button>
-            <button class="server-btn" onclick="changeServer(4)">سيرفر 4 (MultiEmbed)</button>
+            <button class="server-btn" onclick="changeServer(3)">سيرفر 3 (Embed.su)</button>
+            <button class="server-btn" onclick="changeServer(4)">سيرفر 4 (AutoEmbed)</button>
+            <button class="server-btn" onclick="changeServer(5)">سيرفر 5 (2Embed)</button>
+            <button class="server-btn" onclick="changeServer(6)">سيرفر 6 (MultiEmbed)</button>
         </div>
 
         <!-- مشغل الفيديو الرئيسي -->
@@ -187,7 +189,7 @@
         </a>
     </nav>
 
-    <!-- السكربت البرمجي المحدث للسيرفرات -->
+    <!-- السكربت البرمجي المحدث لجميع السيرفرات الستة -->
     <script>
         let currentMovieId = '';
         let currentMovieType = 'movie';
@@ -200,28 +202,42 @@
             if (!currentMovieId) return;
 
             if (activeServerNum === 1) {
-                // سيرفر VidLink الأساسي (نقي وسريع)
+                // سيرفر VidLink (الأساسي النقي)
                 if (currentMovieType === 'tv') {
                     iframe.src = `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
                 } else {
                     iframe.src = `https://vidlink.pro/movie/${currentMovieId}`;
                 }
             } else if (activeServerNum === 2) {
-                // سيرفر Vidsrc الاحتياطي الأول
+                // سيرفر Vidsrc
                 if (currentMovieType === 'tv') {
                     iframe.src = `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`;
                 } else {
                     iframe.src = `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
                 }
             } else if (activeServerNum === 3) {
-                // سيرفر 2Embed الاحتياطي الثاني
+                // سيرفر Embed.su
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    iframe.src = `https://embed.su/embed/movie/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 4) {
+                // سيرفر AutoEmbed
+                if (currentMovieType === 'tv') {
+                    iframe.src = `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
+                } else {
+                    iframe.src = `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
+                }
+            } else if (activeServerNum === 5) {
+                // سيرفر 2Embed
                 if (currentMovieType === 'tv') {
                     iframe.src = `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`;
                 } else {
                     iframe.src = `https://2embed.cc/embed/${currentMovieId}`;
                 }
-            } else if (activeServerNum === 4) {
-                // سيرفر MultiEmbed الاحتياطي الثالث
+            } else if (activeServerNum === 6) {
+                // سيرفر MultiEmbed
                 if (currentMovieType === 'tv') {
                     iframe.src = `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`;
                 } else {
