@@ -43,13 +43,13 @@ async function loadMovies() {
             initApp();
         }
         setupSearch();
-        setupCategoryFilter(); // تفعيل الأقسام الثلاثة والفلترة المتقدمة
+        setupCategoryFilter();
     } catch (error) {
         console.error('خطأ في جلب بيانات الأفلام:', error);
     }
 }
 
-// دالة إنشاء وإضافة كروت الأعمال مع زر المفضلة السريع على البوستر
+// دالة إنشاء كرت العمل مع زر المفضلة السريع على البوستر
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
@@ -71,7 +71,7 @@ function createMovieCard(movie) {
     `;
     
     card.onclick = () => {
-        window.location.href = `watch.html?id=${movie.id}&type=${movie.type}`;
+        window.location.href = `watch.html?id=${movie.id}&type=${movie.type || 'movie'}`;
     };
     return card;
 }
@@ -84,18 +84,48 @@ function toggleFavQuickCard(btn, movie) {
     btn.style.background = active ? 'rgba(229, 9, 20, 0.2)' : 'rgba(0, 0, 0, 0.7)';
 }
 
-// دالة عرض قسم "أكمل المشاهدة" في الصفحة الرئيسية
+// دالة تعبئة الصفوف الأفقية بمحتوى الأفلام
+function renderRow(containerId, sectionName = null, genreName = null, typeFilter = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    container.style.display = 'flex';
+    container.style.gridTemplateColumns = '';
+    container.style.gap = '15px';
+    container.style.overflowX = 'auto';
+    
+    let filteredMovies = movies;
+    if (sectionName) {
+        filteredMovies = movies.filter(item => item.section === sectionName);
+    } else if (genreName) {
+        filteredMovies = movies.filter(item => item.genres && item.genres.includes(genreName));
+    } else if (typeFilter) {
+        filteredMovies = movies.filter(item => item.type === typeFilter);
+    }
+
+    if (filteredMovies.length === 0) {
+        container.innerHTML = '<p class="no-content" style="color: #aaa; padding: 10px;">لا توجد أعمال متاحة حالياً</p>';
+        return;
+    }
+
+    filteredMovies.forEach(movie => {
+        const card = createMovieCard(movie);
+        container.appendChild(card);
+    });
+}
+
+// دالة عرض قسم "أكمل المشاهدة"
 function renderContinueWatching() {
     const history = JSON.parse(localStorage.getItem('youbcima_history') || '[]');
     let cwSection = document.getElementById('continueWatchingSection');
+    const mainContainer = document.querySelector('.content-container');
     
-    // إذا لم تكن هناك سجلات مشاهدة، قم بإخفاء القسم إن وجد
     if (history.length === 0) {
         if (cwSection) cwSection.style.display = 'none';
         return;
     }
 
-    const mainContainer = document.querySelector('.content-container');
     if (!mainContainer) return;
 
     if (!cwSection) {
@@ -107,7 +137,6 @@ function renderContinueWatching() {
             <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> أكمل المشاهدة</h2>
             <div class="row-cards" id="continueWatchingRow" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;"></div>
         `;
-        // إدراجه في أعلى الصفوف تماماً تحت الـ Hero
         const firstRow = mainContainer.querySelector('.row-section');
         if (firstRow) {
             mainContainer.insertBefore(cwSection, firstRow);
@@ -152,7 +181,7 @@ function renderContinueWatching() {
     });
 }
 
-// دالة عرض صفحة المفضلة عند الضغط على زر المفضلة في الشريط السفلي
+// عرض صفحة المفضلة
 function renderFavoritesView() {
     const hero = document.querySelector('.hero-section') || document.getElementById('heroContainer');
     if (hero) hero.style.display = 'none';
@@ -189,25 +218,27 @@ function renderFavoritesView() {
     });
 }
 
-// تشغيل الصفحة الرئيسية وتعبئة الصفوف والأقسام الافتراضية
+// تشغيل الواجهة الرئيسية
 function initApp() {
-    renderContinueWatching(); // عرض سطر أكمل المشاهدة إن وجد تاريخ سابث
+    renderContinueWatching();
+    
+    // إظهار جميع أقسام الصفوف الرئيسية
     document.querySelectorAll('.row-section').forEach(sec => {
-        if (sec.id !== 'continueWatchingSection') sec.style.display = 'block';
+        if (sec.id !== 'favoritesViewSection') {
+            sec.style.display = 'block';
+        }
     });
 
-    renderRow('trendingRow'); // الأكثر شهرة
-    renderRow('turkishSeriesRow', null, null, 'tv'); // مسلسلات عامة
-    renderRow('arabicMoviesRow', null, null, 'movie'); // أفلام عامة
-    renderRow('animeRow', 'أنمي'); // أنمي
+    renderRow('trendingRow');                  // الأكثر شهرة والأحدث
+    renderRow('turkishSeriesRow', null, null, 'tv'); // مسلسلات
+    renderRow('arabicMoviesRow', null, null, 'movie'); // أفلام
+    renderRow('animeRow', 'أنمي');                // أنمي وكرتون
 
-    // إخفاء الأشرطة الفرعية والقوائم في الواجهة الرئيسية
     const seriesSubBar = document.getElementById('seriesSubBar');
     const subCategoriesBar = document.getElementById('subCategoriesBar');
     if (seriesSubBar) seriesSubBar.style.display = 'none';
     if (subCategoriesBar) subCategoriesBar.style.display = 'none';
 
-    // إعداد واجهة الـ Hero
     const heroPlayBtn = document.getElementById('heroPlayBtn');
     const heroTitle = document.getElementById('heroTitle');
     const heroDesc = document.getElementById('heroDesc');
@@ -219,13 +250,13 @@ function initApp() {
 
         if (heroPlayBtn) {
             heroPlayBtn.onclick = () => {
-                window.location.href = `watch.html?id=${featured.id}&type=${featured.type}`;
+                window.location.href = `watch.html?id=${featured.id}&type=${featured.type || 'movie'}`;
             };
         }
     }
 }
 
-// دالة تفعيل الأقسام والتصنيفات الفرعية والقوائم المنسدلة
+// تفعيل الفلاتر والأقسام
 function setupCategoryFilter() {
     const categoryButtons = document.querySelectorAll('.cat-btn');
     const seriesSubBar = document.getElementById('seriesSubBar');
@@ -280,9 +311,11 @@ function setupCategoryFilter() {
 
         allSections.forEach((sec) => {
             if (sec.id === 'continueWatchingSection') {
-                sec.style.display = 'none'; // إخفاء قسم أكمل المشاهدة عند التصفح المتقدم لتوفير المساحة
-            } else {
+                sec.style.display = 'none';
+            } else if (sec === allSections[0]) {
                 sec.style.display = 'block';
+            } else {
+                sec.style.display = 'none';
             }
         });
 
@@ -354,7 +387,6 @@ function setupCategoryFilter() {
         button.addEventListener('click', () => {
             seriesSubButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-
             currentSeriesType = button.getAttribute('data-series-type');
             applyFilters();
         });
@@ -364,7 +396,6 @@ function setupCategoryFilter() {
         button.addEventListener('click', () => {
             subCategoryButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-
             currentGenre = button.getAttribute('data-genre');
             applyFilters();
         });
@@ -378,7 +409,7 @@ function setupCategoryFilter() {
     }
 }
 
-// تفعيل ميزة البحث الفوري
+// البحث الفوري
 function setupSearch() {
     const searchInput = document.getElementById('searchInput') || document.querySelector('input[type="text"]');
     const seriesSubBar = document.getElementById('seriesSubBar');
@@ -409,9 +440,9 @@ function setupSearch() {
             (m.section && m.section.toLowerCase().includes(query))
         );
 
-        allSections.forEach((sec) => {
+        allSections.forEach((sec, idx) => {
             if (sec.id === 'continueWatchingSection') sec.style.display = 'none';
-            else sec.style.display = 'block';
+            else sec.style.display = idx === 0 ? 'block' : 'none';
         });
 
         const titleEl = trendingRow?.previousElementSibling;
@@ -437,7 +468,6 @@ function setupSearch() {
     searchInput.addEventListener('input', performSearch);
 }
 
-// تنفيذ التحميل عند فتح الصفحة الرئيسية
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.location.pathname.includes('watch.html')) {
         loadMovies();
