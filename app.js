@@ -43,13 +43,13 @@ async function loadMovies() {
             initApp();
         }
         setupSearch();
-        setupCategoryFilter(); // تفعيل الأقسام الثلاثة والفلترة المتقدمة
+        setupCategoryFilter();
     } catch (error) {
         console.error('خطأ في جلب بيانات الأفلام:', error);
     }
 }
 
-// دالة تصنيع عنصر كرت العمل مع زر المفضلة السريع على البوستر
+// دالة إنشاء كرت العمل مع زر المفضلة السريع على البوستر
 function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
@@ -71,7 +71,7 @@ function createMovieCard(movie) {
     `;
     
     card.onclick = () => {
-        window.location.href = `watch.html?id=${movie.id}&type=${movie.type}`;
+        window.location.href = `watch.html?id=${movie.id}&type=${movie.type || 'movie'}`;
     };
     return card;
 }
@@ -84,29 +84,32 @@ function toggleFavQuickCard(btn, movie) {
     btn.style.background = active ? 'rgba(229, 9, 20, 0.2)' : 'rgba(0, 0, 0, 0.7)';
 }
 
-// دالة إنشاء وإضافة كروت الأعمال
+// دالة تعبئة الصفوف الأفقية بمحتوى الأفلام
 function renderRow(containerId, sectionName = null, genreName = null, typeFilter = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
     container.innerHTML = '';
-    
-    // التأكد من أن حاوية الصفوف الرئيسية تستخدم التمرير الأفقي (Flex)
     container.style.display = 'flex';
     container.style.gridTemplateColumns = '';
     container.style.gap = '15px';
+    container.style.overflowX = 'auto';
     
     let filteredMovies = movies;
     if (sectionName) {
-        filteredMovies = movies.filter(item => item.section === sectionName);
+        filteredMovies = movies.filter(item => item.section === sectionName || (item.genres && item.genres.includes(sectionName)));
     } else if (genreName) {
         filteredMovies = movies.filter(item => item.genres && item.genres.includes(genreName));
     } else if (typeFilter) {
-        filteredMovies = movies.filter(item => item.type === typeFilter);
+        filteredMovies = movies.filter(item => 
+            item.type === typeFilter || 
+            (typeFilter === 'movie' && (item.section?.includes('أفلام') || item.section?.includes('فيلم'))) ||
+            (typeFilter === 'tv' && (item.section?.includes('مسلسل') || item.section?.includes('مسلسلات')))
+        );
     }
 
     if (filteredMovies.length === 0) {
-        container.innerHTML = '<p class="no-content" style="color: #aaa; padding: 10px;">لا توجد أعمال متاحة في هذا القسم حالياً</p>';
+        container.innerHTML = '<p class="no-content" style="color: #aaa; padding: 10px;">لا توجد أعمال متاحة حالياً</p>';
         return;
     }
 
@@ -116,7 +119,7 @@ function renderRow(containerId, sectionName = null, genreName = null, typeFilter
     });
 }
 
-// دالة عرض قسم "أكمل المشاهدة" في الصفحة الرئيسية
+// دالة عرض قسم "أكمل المشاهدة"
 function renderContinueWatching() {
     const history = JSON.parse(localStorage.getItem('youbcima_history') || '[]');
     let cwSection = document.getElementById('continueWatchingSection');
@@ -182,7 +185,7 @@ function renderContinueWatching() {
     });
 }
 
-// عرض صفحة المفضلة بالكامل
+// عرض صفحة المفضلة
 function renderFavoritesView() {
     const hero = document.querySelector('.hero-section') || document.getElementById('heroContainer');
     if (hero) hero.style.display = 'none';
@@ -219,25 +222,26 @@ function renderFavoritesView() {
     });
 }
 
-// تشغيل الصفحة الرئيسية وتعبئة الصفوف والأقسام الافتراضية
+// تشغيل الواجهة الرئيسية
 function initApp() {
-    renderContinueWatching(); 
+    renderContinueWatching();
+    
     document.querySelectorAll('.row-section').forEach(sec => {
-        if (sec.id !== 'favoritesViewSection') sec.style.display = 'block';
+        if (sec.id !== 'favoritesViewSection') {
+            sec.style.display = 'block';
+        }
     });
 
-    renderRow('trendingRow'); // الأكثر شهرة
-    renderRow('turkishSeriesRow', null, null, 'tv'); // مسلسلات عامة
-    renderRow('arabicMoviesRow', null, null, 'movie'); // أفلام عامة
-    renderRow('animeRow', 'أنمي'); // أنمي
+    renderRow('trendingRow');                  // الأكثر شهرة والأحدث
+    renderRow('turkishSeriesRow', null, null, 'tv'); // مسلسلات
+    renderRow('arabicMoviesRow', null, null, 'movie'); // أفلام
+    renderRow('animeRow', 'أنمي');                // أنمي وكرتون
 
-    // إخفاء الأشرطة الفرعية والقوائم في الواجهة الرئيسية
     const seriesSubBar = document.getElementById('seriesSubBar');
     const subCategoriesBar = document.getElementById('subCategoriesBar');
     if (seriesSubBar) seriesSubBar.style.display = 'none';
     if (subCategoriesBar) subCategoriesBar.style.display = 'none';
 
-    // إعداد واجهة الـ Hero
     const heroPlayBtn = document.getElementById('heroPlayBtn');
     const heroTitle = document.getElementById('heroTitle');
     const heroDesc = document.getElementById('heroDesc');
@@ -249,25 +253,21 @@ function initApp() {
 
         if (heroPlayBtn) {
             heroPlayBtn.onclick = () => {
-                window.location.href = `watch.html?id=${featured.id}&type=${featured.type}`;
+                window.location.href = `watch.html?id=${featured.id}&type=${featured.type || 'movie'}`;
             };
         }
     }
 }
 
-// دالة تفعيل الأقسام والتصنيفات الفرعية والقوائم المنسدلة
+// تفعيل الفلاتر والأقسام
 function setupCategoryFilter() {
     const categoryButtons = document.querySelectorAll('.cat-btn');
-    
     const seriesSubBar = document.getElementById('seriesSubBar');
     const seriesSubButtons = document.querySelectorAll('.series-sub-btn');
-    
     const subCategoriesBar = document.getElementById('subCategoriesBar');
     const subCategoryButtons = document.querySelectorAll('.sub-cat-btn');
-    
     const yearDropdownContainer = document.getElementById('yearDropdownContainer');
     const yearSelect = document.getElementById('yearSelect');
-
     const trendingRow = document.getElementById('trendingRow');
     const allSections = document.querySelectorAll('.row-section');
 
@@ -280,25 +280,34 @@ function setupCategoryFilter() {
         let filtered = movies;
         let sectionLabel = "";
 
-        // 1. الفلترة حسب القسم الرئيسي (السطر الأول)
+        // تصفية ذكية تفحص type و section و genres بدقة
         if (currentMain === 'movies') {
-            filtered = movies.filter(item => item.type === 'movie' && item.section !== 'أنمي');
+            filtered = movies.filter(item => 
+                item.type === 'movie' || 
+                (item.section && (item.section.includes('أفلام') || item.section.includes('فيلم')))
+            );
+            filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
             sectionLabel = "أفلام";
         } else if (currentMain === 'tv') {
-            filtered = movies.filter(item => item.type === 'tv' && item.section !== 'أنمي');
+            filtered = movies.filter(item => 
+                item.type === 'tv' || 
+                (item.section && (item.section.includes('مسلسل') || item.section.includes('مسلسلات')))
+            );
+            filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
             sectionLabel = "مسلسلات";
         } else if (currentMain === 'أنمي') {
-            filtered = movies.filter(item => item.section === 'أنمي' || (item.genres && item.genres.includes('أنمي وكرتون')));
+            filtered = movies.filter(item => 
+                (item.section && (item.section.includes('أنمي') || item.section.includes('كرتون'))) || 
+                (item.genres && item.genres.some(g => g.includes('أنمي') || g.includes('كرتون')))
+            );
             sectionLabel = "أنمي";
         }
 
-        // 2. الفلترة حسب نوع/دولة المسلسلات (السطر الثاني - حصري للمسلسلات)
         if (currentMain === 'tv' && currentSeriesType !== 'all') {
             filtered = filtered.filter(item => item.section === currentSeriesType || (item.genres && item.genres.includes(currentSeriesType)));
             sectionLabel += ` - ${currentSeriesType}`;
         }
 
-        // 3. الفلترة أو الترتيب حسب "الأحدث" أو تصنيفات IMDb الفرعية (السطر الثالث)
         if (currentGenre === 'latest') {
             filtered = [...filtered].reverse();
             sectionLabel += ` - الأحدث`;
@@ -307,7 +316,6 @@ function setupCategoryFilter() {
             sectionLabel += ` - ${currentGenre}`;
         }
 
-        // 4. الفلترة حسب سنة الإنتاج للأفلام (السطر الثالث - القائمة المنسدلة حصرياً للأفلام)
         if (currentMain === 'movies' && currentYear !== 'all') {
             filtered = filtered.filter(item => {
                 const itemYear = item.year || (item.release_date ? item.release_date.substring(0, 4) : '');
@@ -316,7 +324,7 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
-        // إظهار القسم الخاص بـ trendingRow حصرياً وإخفاء بقية الأقسام وأكمل المشاهدة
+        // إظهار قسم trendingRow فقط وإخفاء البقية
         const trendingSec = trendingRow?.closest('.row-section');
         allSections.forEach((sec) => {
             if (sec === trendingSec) {
@@ -330,14 +338,13 @@ function setupCategoryFilter() {
         if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${sectionLabel}`;
 
         if (trendingRow) {
-            // تطبيق شبكة 3 بوسترات في السطر حصرياً عند تصفح الأقسام
             trendingRow.style.display = 'grid';
             trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
             trendingRow.style.gap = '8px';
             trendingRow.innerHTML = '';
 
             if (filtered.length === 0) {
-                trendingRow.innerHTML = `<p style="color: #aaa; padding: 30px; text-align: center; width: 100%;">عذراً، لا توجد أعمال مطابقة للخيارات المحددة حالياً.</p>`;
+                trendingRow.innerHTML = `<p style="color: #fff; padding: 30px; text-align: center; grid-column: span 3;">عذراً، لا توجد أعمال مطابقة للخيارات المحددة حالياً.</p>`;
                 return;
             }
 
@@ -348,7 +355,6 @@ function setupCategoryFilter() {
         }
     }
 
-    // استماع للأقسام الأساسية (السطر الأول)
     categoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             categoryButtons.forEach(btn => btn.classList.remove('active'));
@@ -361,7 +367,6 @@ function setupCategoryFilter() {
 
             if (yearSelect) yearSelect.value = 'all';
 
-            // إعادة ضبط الأزرار الفرعية
             seriesSubButtons.forEach(b => b.classList.remove('active'));
             seriesSubButtons[0]?.classList.add('active');
 
@@ -375,7 +380,6 @@ function setupCategoryFilter() {
                 return;
             }
 
-            // إظهار وإخفاء الأسطر حسب القسم المختار
             if (currentMain === 'tv') {
                 if (seriesSubBar) seriesSubBar.style.display = 'flex';
                 if (subCategoriesBar) subCategoriesBar.style.display = 'flex';
@@ -394,29 +398,24 @@ function setupCategoryFilter() {
         });
     });
 
-    // استماع لتصنيفات المسلسلات (السطر الثاني)
     seriesSubButtons.forEach(button => {
         button.addEventListener('click', () => {
             seriesSubButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-
             currentSeriesType = button.getAttribute('data-series-type');
             applyFilters();
         });
     });
 
-    // استماع لتصنيفات IMDb أو زر الأحدث (السطر الثالث)
     subCategoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             subCategoryButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-
             currentGenre = button.getAttribute('data-genre');
             applyFilters();
         });
     });
 
-    // استماع لتغيير قائمة سنة الإنتاج (للأفلام)
     if (yearSelect) {
         yearSelect.addEventListener('change', (e) => {
             currentYear = e.target.value;
@@ -425,7 +424,7 @@ function setupCategoryFilter() {
     }
 }
 
-// تفعيل ميزة البحث الفوري
+// البحث الفوري
 function setupSearch() {
     const searchInput = document.getElementById('searchInput') || document.querySelector('input[type="text"]');
     const seriesSubBar = document.getElementById('seriesSubBar');
@@ -447,7 +446,6 @@ function setupSearch() {
             return;
         }
 
-        // إخفاء الأشرطة الفرعية أثناء البحث
         if (seriesSubBar) seriesSubBar.style.display = 'none';
         if (subCategoriesBar) subCategoriesBar.style.display = 'none';
 
@@ -470,14 +468,13 @@ function setupSearch() {
         if (titleEl) titleEl.textContent = `نتائج البحث: "${searchInput.value}"`;
 
         if (trendingRow) {
-            // تطبيق شبكة 3 بوسترات عند البحث أيضاً
             trendingRow.style.display = 'grid';
             trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
             trendingRow.style.gap = '8px';
             trendingRow.innerHTML = '';
             
             if (matchedMovies.length === 0) {
-                trendingRow.innerHTML = '<p style="color: #fff; padding: 20px; text-align: center; width: 100%;">عذراً، لم نجد أي عمل مطابق لبحثك.</p>';
+                trendingRow.innerHTML = `<p style="color: #fff; padding: 20px; text-align: center; grid-column: span 3;">عذراً، لم نجد أي عمل مطابق لبحثك.</p>`;
                 return;
             }
             matchedMovies.forEach(movie => {
@@ -490,7 +487,6 @@ function setupSearch() {
     searchInput.addEventListener('input', performSearch);
 }
 
-// تنفيذ التحميل عند فتح الصفحة الرئيسية
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.location.pathname.includes('watch.html')) {
         loadMovies();
