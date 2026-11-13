@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import datetime
 
 API_KEY = "3fc9a599ce632eacdf94e9382a49da27"
 BASE_URL = "https://api.themoviedb.org/3"
@@ -79,7 +80,8 @@ def fetch_content(media_type, language=None, pages=5):
                         "year": (item.get("release_date") or item.get("first_air_date") or "2026")[:4],
                         "overview": item.get("overview") or "لا يوجد وصف متوفر حالياً.",
                         "section": section,
-                        "genres": list(set(genre_names))
+                        "genres": list(set(genre_names)),
+                        "date": datetime.date.today().isoformat()  # 👈 هذا هو السطر الجديد لتسجيل تاريخ الرفع اليومي بدقة
                     }
                     results.append(entry)
             else:
