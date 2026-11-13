@@ -1,6 +1,6 @@
 let movies = [];
 
-// قاموس الترجمات الشامل للموقع
+// قاموس الترجمات الشامل للموقع وصفحة المشاهدة
 const siteTranslations = {
     "ar-dz": {
         dir: "rtl",
@@ -37,7 +37,16 @@ const siteTranslations = {
         no_content: "لا توجد أعمال متاحة حالياً",
         no_match: "عذراً، لا توجد أعمال مطابقة للخيارات المحددة حالياً.",
         no_search_match: "عذراً، لم نجد أي عمل مطابق لبحثك.",
-        no_overview: "لا توجد قصة متاحة"
+        no_overview: "لا توجد قصة متاحةة",
+        servers_label: "السيرفرات:",
+        season_label: "الموسم:",
+        episode_label: "الحلقة:",
+        add_fav: "أضف للمفضلة",
+        remove_fav: "إزالة من المفضلة",
+        related_title: "قد تهمك",
+        telegram_channel: "قناة Youb Cima على التليغرام",
+        join_now: "انضم الآن ←",
+        loading_title: "جاري التحميل..."
     },
     "en": {
         dir: "ltr",
@@ -74,7 +83,16 @@ const siteTranslations = {
         no_content: "No works available currently",
         no_match: "Sorry, no works match the selected options currently.",
         no_search_match: "Sorry, we couldn't find any work matching your search.",
-        no_overview: "No overview available"
+        no_overview: "No overview available",
+        servers_label: "Servers:",
+        season_label: "Season:",
+        episode_label: "Episode:",
+        add_fav: "Add to Favorites",
+        remove_fav: "Remove from Favorites",
+        related_title: "You may also like",
+        telegram_channel: "Youb Cima Telegram Channel",
+        join_now: "Join Now ←",
+        loading_title: "Loading..."
     },
     "fr": {
         dir: "ltr",
@@ -111,7 +129,16 @@ const siteTranslations = {
         no_content: "Aucun contenu disponible actuellement",
         no_match: "Désolé, aucun contenu ne correspond aux options sélectionnées.",
         no_search_match: "Désolé, nous n'avons trouvé aucun contenu correspondant à votre recherche.",
-        no_overview: "Aucun résumé disponible"
+        no_overview: "Aucun résumé disponible",
+        servers_label: "Serveurs :",
+        season_label: "Saison :",
+        episode_label: "Épisode :",
+        add_fav: "Ajouter aux favoris",
+        remove_fav: "Retirer des favoris",
+        related_title: "Vous pourriez aimer",
+        telegram_channel: "Canal Telegram Youb Cima",
+        join_now: "Rejoindre ←",
+        loading_title: "Chargement..."
     },
     "es": {
         dir: "ltr",
@@ -148,7 +175,16 @@ const siteTranslations = {
         no_content: "No hay contenido disponible actualmente",
         no_match: "Lo siento, no hay contenido que coincida con las opciones seleccionadas.",
         no_search_match: "Lo siento, no pudimos encontrar ningún contenido que coincida con tu búsqueda.",
-        no_overview: "No hay resumen disponible"
+        no_overview: "No hay resumen disponible",
+        servers_label: "Servidores:",
+        season_label: "Temporada:",
+        episode_label: "Episodio:",
+        add_fav: "Añadir a favoritos",
+        remove_fav: "Quitar de favoritos",
+        related_title: "También te puede interesar",
+        telegram_channel: "Canal de Telegram Youb Cima",
+        join_now: "Unirse ahora ←",
+        loading_title: "Cargando..."
     }
 };
 
@@ -193,8 +229,10 @@ function switchLanguage(lang) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('view') === 'favorites') {
         renderFavoritesView();
-    } else {
+    } else if (!window.location.pathname.includes('watch.html')) {
         initApp();
+    } else {
+        location.reload(); // إعادة تحميل خفيفة لترجمة صفحة المشاهدة بالكامل عند التبديل الفوري
     }
 }
 
