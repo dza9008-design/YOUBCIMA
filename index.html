@@ -115,19 +115,23 @@
 
     </main>
 
-    <!-- شريط التنقل السفلي للهواتف -->
+    <!-- شريط التنقل السفلي للهواتف (تم استبدال المزيد بالمفضلة) -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
             <i class="fa-solid fa-house"></i>
             <span>الرئيسية</span>
         </a>
-        <a href="#searchInput" class="nav-item">
+        <a href="#" class="nav-item" onclick="document.getElementById('searchInput')?.focus(); return false;">
             <i class="fa-solid fa-magnifying-glass"></i>
             <span>بحث</span>
         </a>
         <a href="#" class="nav-item">
-            <i class="fa-solid fa-circle-info"></i>
-            <span>المزيد</span>
+            <i class="fa-brands fa-telegram"></i>
+            <span>Telegram</span>
+        </a>
+        <a href="index.html?view=favorites" class="nav-item" id="favBottomNav">
+            <i class="fa-solid fa-heart" style="color: #e50914;"></i>
+            <span>المفضلة</span>
         </a>
     </nav>
 
