@@ -97,11 +97,11 @@ function renderRow(containerId, sectionName = null, genreName = null, typeFilter
     
     let filteredMovies = movies;
     if (sectionName) {
-        filteredMovies = movies.filter(item => item.section === sectionName);
+        filteredMovies = movies.filter(item => item.section === sectionName || (item.genres && item.genres.includes(sectionName)));
     } else if (genreName) {
         filteredMovies = movies.filter(item => item.genres && item.genres.includes(genreName));
     } else if (typeFilter) {
-        filteredMovies = movies.filter(item => item.type === typeFilter);
+        filteredMovies = movies.filter(item => item.type === typeFilter || (typeFilter === 'movie' && item.section === 'أفلام') || (typeFilter === 'tv' && item.section && item.section.includes('مسلسلات')));
     }
 
     if (filteredMovies.length === 0) {
@@ -222,7 +222,6 @@ function renderFavoritesView() {
 function initApp() {
     renderContinueWatching();
     
-    // إظهار جميع أقسام الصفوف الرئيسية
     document.querySelectorAll('.row-section').forEach(sec => {
         if (sec.id !== 'favoritesViewSection') {
             sec.style.display = 'block';
@@ -278,13 +277,25 @@ function setupCategoryFilter() {
         let sectionLabel = "";
 
         if (currentMain === 'movies') {
-            filtered = movies.filter(item => item.type === 'movie' && item.section !== 'أنمي');
+            filtered = movies.filter(item => 
+                item.type === 'movie' || 
+                item.section === 'أفلام' || 
+                (item.section && item.section.includes('أفلام'))
+            );
             sectionLabel = "أفلام";
         } else if (currentMain === 'tv') {
-            filtered = movies.filter(item => item.type === 'tv' && item.section !== 'أنمي');
+            filtered = movies.filter(item => 
+                item.type === 'tv' || 
+                item.section === 'مسلسلات' || 
+                (item.section && item.section.includes('مسلسلات'))
+            );
             sectionLabel = "مسلسلات";
         } else if (currentMain === 'أنمي') {
-            filtered = movies.filter(item => item.section === 'أنمي' || (item.genres && item.genres.includes('أنمي وكرتون')));
+            filtered = movies.filter(item => 
+                item.section === 'أنمي' || 
+                item.section === 'أنمي وكرتون' || 
+                (item.genres && item.genres.some(g => g.includes('أنمي')))
+            );
             sectionLabel = "أنمي";
         }
 
@@ -309,7 +320,6 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
-        // إخفاء جميع الأقسام ما عدا قسم النتائج الأول
         allSections.forEach((sec) => {
             if (sec.id === 'continueWatchingSection') {
                 sec.style.display = 'none';
