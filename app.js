@@ -1,5 +1,203 @@
 let movies = [];
 
+// قاموس الترجمات الشامل للموقع
+const siteTranslations = {
+    "ar-dz": {
+        dir: "rtl",
+        home: "الرئيسية",
+        search_placeholder: "ابحث عن فيلم أو مسلسل...",
+        trending_badge: "الأكثر مشاهدة اليوم",
+        hero_desc: "استمتع بأحدث الأفلام والمسلسلات بجودة عالية حصرياً على Youb Cima.",
+        watch_now: "تشغيل الآن",
+        cat_all: "الكل",
+        cat_movies: "أفلام",
+        cat_series: "مسلسلات",
+        cat_anime: "أنمي",
+        series_arabic: "مسلسلات عربية",
+        series_turkish: "مسلسلات تركية",
+        series_korean: "مسلسلات كورية",
+        series_foreign: "مسلسلات أجنبية",
+        genre_latest: "الأحدث",
+        genre_action: "أكشن",
+        genre_horror: "رعب",
+        genre_drama: "دراما",
+        genre_comedy: "كوميديا",
+        genre_scifi: "خيال علمي",
+        genre_thriller: "إثارة",
+        genre_adventure: "مغامرة",
+        year_all: "سنة الإنتاج: الكل",
+        year_older: "2022 فما قبل",
+        row_trending: "الأكثر شهرة والأحدث",
+        row_series: "مسلسلات",
+        row_movies: "أفلام",
+        row_anime: "أنمي وكرتون",
+        search_bottom: "بحث",
+        favorites: "المفضلة",
+        continue_watching: "أكمل المشاهدة",
+        no_content: "لا توجد أعمال متاحة حالياً",
+        no_match: "عذراً، لا توجد أعمال مطابقة للخيارات المحددة حالياً.",
+        no_search_match: "عذراً، لم نجد أي عمل مطابق لبحثك.",
+        no_overview: "لا توجد قصة متاحة"
+    },
+    "en": {
+        dir: "ltr",
+        home: "Home",
+        search_placeholder: "Search for a movie or series...",
+        trending_badge: "Most Watched Today",
+        hero_desc: "Enjoy the latest movies and series in high quality exclusively on Youb Cima.",
+        watch_now: "Watch Now",
+        cat_all: "All",
+        cat_movies: "Movies",
+        cat_series: "Series",
+        cat_anime: "Anime",
+        series_arabic: "Arabic Series",
+        series_turkish: "Turkish Series",
+        series_korean: "Korean Series",
+        series_foreign: "Foreign Series",
+        genre_latest: "Latest",
+        genre_action: "Action",
+        genre_horror: "Horror",
+        genre_drama: "Drama",
+        genre_comedy: "Comedy",
+        genre_scifi: "Sci-Fi",
+        genre_thriller: "Thriller",
+        genre_adventure: "Adventure",
+        year_all: "Production Year: All",
+        year_older: "2022 & Older",
+        row_trending: "Most Popular & Latest",
+        row_series: "Series",
+        row_movies: "Movies",
+        row_anime: "Anime & Cartoons",
+        search_bottom: "Search",
+        favorites: "Favorites",
+        continue_watching: "Continue Watching",
+        no_content: "No works available currently",
+        no_match: "Sorry, no works match the selected options currently.",
+        no_search_match: "Sorry, we couldn't find any work matching your search.",
+        no_overview: "No overview available"
+    },
+    "fr": {
+        dir: "ltr",
+        home: "Accueil",
+        search_placeholder: "Rechercher un film ou une série...",
+        trending_badge: "Les plus regardés aujourd'hui",
+        hero_desc: "Profitez des derniers films et séries en haute qualité exclusivement sur Youb Cima.",
+        watch_now: "Regarder",
+        cat_all: "Tous",
+        cat_movies: "Films",
+        cat_series: "Séries",
+        cat_anime: "Anime",
+        series_arabic: "Séries arabes",
+        series_turkish: "Séries turques",
+        series_korean: "Séries coréennes",
+        series_foreign: "Séries étrangères",
+        genre_latest: "Plus récents",
+        genre_action: "Action",
+        genre_horror: "Horreur",
+        genre_drama: "Drame",
+        genre_comedy: "Comédie",
+        genre_scifi: "Science-fiction",
+        genre_thriller: "Thriller",
+        genre_adventure: "Aventure",
+        year_all: "Année de production : Tous",
+        year_older: "2022 et avant",
+        row_trending: "Plus populaires et récents",
+        row_series: "Séries",
+        row_movies: "Films",
+        row_anime: "Anime et dessins animés",
+        search_bottom: "Rechercher",
+        favorites: "Favoris",
+        continue_watching: "Continuer la lecture",
+        no_content: "Aucun contenu disponible actuellement",
+        no_match: "Désolé, aucun contenu ne correspond aux options sélectionnées.",
+        no_search_match: "Désolé, nous n'avons trouvé aucun contenu correspondant à votre recherche.",
+        no_overview: "Aucun résumé disponible"
+    },
+    "es": {
+        dir: "ltr",
+        home: "Inicio",
+        search_placeholder: "Buscar película o serie...",
+        trending_badge: "Más vistos hoy",
+        hero_desc: "Disfruta de las últimas películas y series en alta calidad exclusivamente en Youb Cima.",
+        watch_now: "Ver ahora",
+        cat_all: "Todos",
+        cat_movies: "Películas",
+        cat_series: "Series",
+        cat_anime: "Anime",
+        series_arabic: "Series árabes",
+        series_turkish: "Series turcas",
+        series_korean: "Series coreanas",
+        series_foreign: "Series extranjeras",
+        genre_latest: "Más recientes",
+        genre_action: "Acción",
+        genre_horror: "Terror",
+        genre_drama: "Drama",
+        genre_comedy: "Comedia",
+        genre_scifi: "Ciencia ficción",
+        genre_thriller: "Suspenso",
+        genre_adventure: "Aventura",
+        year_all: "Año de producción: Todos",
+        year_older: "2022 y anteriores",
+        row_trending: "Más populares y recientes",
+        row_series: "Series",
+        row_movies: "Películas",
+        row_anime: "Anime y caricaturas",
+        search_bottom: "Buscar",
+        favorites: "Favoritos",
+        continue_watching: "Continuar viendo",
+        no_content: "No hay contenido disponible actualmente",
+        no_match: "Lo siento, no hay contenido que coincida con las opciones seleccionadas.",
+        no_search_match: "Lo siento, no pudimos encontrar ningún contenido que coincida con tu búsqueda.",
+        no_overview: "No hay resumen disponible"
+    }
+};
+
+let currentLang = 'ar-dz';
+
+// دوال إدارة اللغات
+function applyLanguage(lang) {
+    if (!siteTranslations[lang]) lang = 'ar-dz';
+    currentLang = lang;
+    localStorage.setItem('user_lang', lang);
+
+    const langSelect = document.getElementById('langSelect');
+    if (langSelect) langSelect.value = lang;
+
+    const t = siteTranslations[lang];
+    document.documentElement.setAttribute('dir', t.dir);
+    document.documentElement.setAttribute('lang', lang);
+
+    // تحديث كافة العناصر التي تحمل سمة data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+            const icon = el.querySelector('i');
+            if (icon) {
+                const iconHTML = icon.outerHTML;
+                el.innerHTML = `${iconHTML} ${t[key]}`;
+            } else {
+                el.textContent = t[key];
+            }
+        }
+    });
+
+    // تحديث حقول البحث (Placeholders)
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) el.placeholder = t[key];
+    });
+}
+
+function switchLanguage(lang) {
+    applyLanguage(lang);
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'favorites') {
+        renderFavoritesView();
+    } else {
+        initApp();
+    }
+}
+
 // دوال إدارة المفضلة عبر LocalStorage
 function getFavorites() {
     return JSON.parse(localStorage.getItem('youbcima_favorites') || '[]');
@@ -54,7 +252,7 @@ function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
     
-    const badgeType = movie.type === 'tv' ? 'مسلسل' : 'HD';
+    const badgeType = movie.type === 'tv' ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD';
     const favActive = isFavorite(movie.id) ? 'active' : '';
     const favColor = favActive ? '#e50914' : '#fff';
     const favBg = favActive ? 'rgba(229, 9, 20, 0.2)' : 'rgba(0, 0, 0, 0.7)';
@@ -109,7 +307,7 @@ function renderRow(containerId, sectionName = null, genreName = null, typeFilter
     }
 
     if (filteredMovies.length === 0) {
-        container.innerHTML = '<p class="no-content" style="color: #aaa; padding: 10px;">لا توجد أعمال متاحة حالياً</p>';
+        container.innerHTML = `<p class="no-content" style="color: #aaa; padding: 10px;">${siteTranslations[currentLang].no_content}</p>`;
         return;
     }
 
@@ -138,7 +336,7 @@ function renderContinueWatching() {
         cwSection.className = 'row-section';
         cwSection.style.marginBottom = '25px';
         cwSection.innerHTML = `
-            <h2 class="row-title" style="color: #fff; margin-bottom: 10px; font-size: 18px;"><i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> أكمل المشاهدة</h2>
+            <h2 class="row-title" style="color: #fff; margin-bottom: 10px; font-size: 18px;"><i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> ${siteTranslations[currentLang].continue_watching}</h2>
             <div class="row-cards" id="continueWatchingRow" style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;"></div>
         `;
         const firstRow = mainContainer.querySelector('.row-section');
@@ -149,6 +347,8 @@ function renderContinueWatching() {
         }
     } else {
         cwSection.style.display = 'block';
+        const titleEl = cwSection.querySelector('.row-title');
+        if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-clock-rotate-left" style="color: #e50914;"></i> ${siteTranslations[currentLang].continue_watching}`;
     }
 
     const row = document.getElementById('continueWatchingRow');
@@ -198,13 +398,15 @@ function renderFavoritesView() {
         favSection.id = 'favoritesViewSection';
         favSection.style.padding = '20px';
         favSection.innerHTML = `
-            <h2 class="row-title" style="margin-bottom: 20px; font-size: 20px; color: #fff;"><i class="fa-solid fa-heart" style="color: #e50914;"></i> قائمة المفضلة</h2>
+            <h2 class="row-title" style="margin-bottom: 20px; font-size: 20px; color: #fff;"><i class="fa-solid fa-heart" style="color: #e50914;"></i> ${siteTranslations[currentLang].favorites}</h2>
             <div id="favoritesGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></div>
         `;
         const mainContainer = document.querySelector('.content-container') || document.body;
         mainContainer.appendChild(favSection);
     } else {
         favSection.style.display = 'block';
+        const titleEl = favSection.querySelector('.row-title');
+        if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-heart" style="color: #e50914;"></i> ${siteTranslations[currentLang].favorites}`;
     }
 
     const grid = document.getElementById('favoritesGrid');
@@ -212,7 +414,7 @@ function renderFavoritesView() {
     grid.innerHTML = '';
 
     if (favorites.length === 0) {
-        grid.innerHTML = '<p style="color: #aaa; text-align: center; grid-column: span 3; padding: 40px;">لا توجد أي أعمال في قائمة المفضلة حالياً.</p>';
+        grid.innerHTML = `<p style="color: #aaa; text-align: center; grid-column: span 3; padding: 40px;">${siteTranslations[currentLang].no_content}</p>`;
         return;
     }
 
@@ -249,7 +451,7 @@ function initApp() {
     if (movies.length > 0) {
         const featured = movies[0];
         if (heroTitle) heroTitle.textContent = featured.title;
-        if (heroDesc) heroDesc.textContent = featured.overview || "لا توجد قصة متاحة";
+        if (heroDesc) heroDesc.textContent = featured.overview || siteTranslations[currentLang].no_overview;
 
         if (heroPlayBtn) {
             heroPlayBtn.onclick = () => {
@@ -280,27 +482,26 @@ function setupCategoryFilter() {
         let filtered = movies;
         let sectionLabel = "";
 
-        // تصفية ذكية تفحص type و section و genres بدقة
         if (currentMain === 'movies') {
             filtered = movies.filter(item => 
                 item.type === 'movie' || 
                 (item.section && (item.section.includes('أفلام') || item.section.includes('فيلم')))
             );
             filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
-            sectionLabel = "أفلام";
+            sectionLabel = siteTranslations[currentLang].cat_movies;
         } else if (currentMain === 'tv') {
             filtered = movies.filter(item => 
                 item.type === 'tv' || 
                 (item.section && (item.section.includes('مسلسل') || item.section.includes('مسلسلات')))
             );
             filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
-            sectionLabel = "مسلسلات";
+            sectionLabel = siteTranslations[currentLang].cat_series;
         } else if (currentMain === 'أنمي') {
             filtered = movies.filter(item => 
                 (item.section && (item.section.includes('أنمي') || item.section.includes('كرتون'))) || 
                 (item.genres && item.genres.some(g => g.includes('أنمي') || g.includes('كرتون')))
             );
-            sectionLabel = "أنمي";
+            sectionLabel = siteTranslations[currentLang].cat_anime;
         }
 
         if (currentMain === 'tv' && currentSeriesType !== 'all') {
@@ -310,7 +511,7 @@ function setupCategoryFilter() {
 
         if (currentGenre === 'latest') {
             filtered = [...filtered].reverse();
-            sectionLabel += ` - الأحدث`;
+            sectionLabel += ` - ${siteTranslations[currentLang].genre_latest}`;
         } else if (currentGenre !== 'all') {
             filtered = filtered.filter(item => item.genres && item.genres.includes(currentGenre));
             sectionLabel += ` - ${currentGenre}`;
@@ -324,7 +525,6 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
-        // إظهار قسم trendingRow فقط وإخفاء البقية
         const trendingSec = trendingRow?.closest('.row-section');
         allSections.forEach((sec) => {
             if (sec === trendingSec) {
@@ -344,7 +544,7 @@ function setupCategoryFilter() {
             trendingRow.innerHTML = '';
 
             if (filtered.length === 0) {
-                trendingRow.innerHTML = `<p style="color: #fff; padding: 30px; text-align: center; grid-column: span 3;">عذراً، لا توجد أعمال مطابقة للخيارات المحددة حالياً.</p>`;
+                trendingRow.innerHTML = `<p style="color: #fff; padding: 30px; text-align: center; grid-column: span 3;">${siteTranslations[currentLang].no_match}</p>`;
                 return;
             }
 
@@ -465,7 +665,7 @@ function setupSearch() {
         });
 
         const titleEl = trendingRow?.previousElementSibling;
-        if (titleEl) titleEl.textContent = `نتائج البحث: "${searchInput.value}"`;
+        if (titleEl) titleEl.textContent = `${currentLang === 'fr' ? 'Résultats de recherche' : currentLang === 'en' ? 'Search Results' : 'نتائج البحث'}: "${searchInput.value}"`;
 
         if (trendingRow) {
             trendingRow.style.display = 'grid';
@@ -474,7 +674,7 @@ function setupSearch() {
             trendingRow.innerHTML = '';
             
             if (matchedMovies.length === 0) {
-                trendingRow.innerHTML = `<p style="color: #fff; padding: 20px; text-align: center; grid-column: span 3;">عذراً، لم نجد أي عمل مطابق لبحثك.</p>`;
+                trendingRow.innerHTML = `<p style="color: #fff; padding: 20px; text-align: center; grid-column: span 3;">${siteTranslations[currentLang].no_search_match}</p>`;
                 return;
             }
             matchedMovies.forEach(movie => {
@@ -487,7 +687,23 @@ function setupSearch() {
     searchInput.addEventListener('input', performSearch);
 }
 
+// عند تحميل الصفحة لأول مرة
 document.addEventListener('DOMContentLoaded', () => {
+    let savedLang = localStorage.getItem('user_lang');
+    if (!savedLang) {
+        let phoneLang = navigator.language || navigator.userLanguage;
+        if (phoneLang.startsWith('ar')) {
+            savedLang = 'ar-dz';
+        } else if (phoneLang.startsWith('fr')) {
+            savedLang = 'fr';
+        } else if (phoneLang.startsWith('es')) {
+            savedLang = 'es';
+        } else {
+            savedLang = 'en';
+        }
+    }
+    applyLanguage(savedLang);
+
     if (!window.location.pathname.includes('watch.html')) {
         loadMovies();
     }
