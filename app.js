@@ -168,9 +168,9 @@ function setupCategoryFilter() {
         if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${sectionLabel}`;
 
         if (trendingRow) {
-            trendingRow.style.display = 'flex';
-            trendingRow.style.flexWrap = 'wrap';
-            trendingRow.style.gap = '15px';
+            trendingRow.style.display = 'grid';
+            trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            trendingRow.style.gap = '8px';
             trendingRow.innerHTML = '';
 
             if (filtered.length === 0) {
@@ -297,8 +297,9 @@ function setupSearch() {
         if (titleEl) titleEl.textContent = `نتائج البحث: "${searchInput.value}"`;
 
         if (trendingRow) {
-            trendingRow.style.flexWrap = 'wrap';
-            trendingRow.style.gap = '15px';
+            trendingRow.style.display = 'grid';
+            trendingRow.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            trendingRow.style.gap = '8px';
             trendingRow.innerHTML = '';
             
             if (matchedMovies.length === 0) {
