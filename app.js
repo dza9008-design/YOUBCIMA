@@ -221,7 +221,7 @@ function renderFavoritesView() {
 
 // تشغيل الصفحة الرئيسية وتعبئة الصفوف والأقسام الافتراضية
 function initApp() {
-    renderContinueWatching(); // عرض قسم أكمل المشاهدة إن وجد تاريخ سابث
+    renderContinueWatching(); 
     document.querySelectorAll('.row-section').forEach(sec => {
         if (sec.id !== 'favoritesViewSection') sec.style.display = 'block';
     });
@@ -316,11 +316,13 @@ function setupCategoryFilter() {
             sectionLabel += ` (${currentYear})`;
         }
 
-        allSections.forEach((sec, index) => {
-            if (sec.id === 'continueWatchingSection') {
-                sec.style.display = 'none';
+        // تحديد القسم الحقيقي الذي يحوي trendingRow وإظهاره وإخفاء الباقي بدقة
+        const trendingSec = trendingRow?.closest('.row-section');
+        allSections.forEach((sec) => {
+            if (sec === trendingSec) {
+                sec.style.display = 'block';
             } else {
-                sec.style.display = index === 0 ? 'block' : 'none';
+                sec.style.display = 'none';
             }
         });
 
@@ -455,11 +457,12 @@ function setupSearch() {
             (m.section && m.section.toLowerCase().includes(query))
         );
 
-        allSections.forEach((sec, index) => {
-            if (sec.id === 'continueWatchingSection') {
-                sec.style.display = 'none';
+        const trendingSec = trendingRow?.closest('.row-section');
+        allSections.forEach((sec) => {
+            if (sec === trendingSec) {
+                sec.style.display = 'block';
             } else {
-                sec.style.display = index === 0 ? 'block' : 'none';
+                sec.style.display = 'none';
             }
         });
 
