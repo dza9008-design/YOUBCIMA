@@ -17,14 +17,25 @@
                 <i class="fa-solid fa-film logo-icon"></i>
             </a>
             <nav class="desktop-menu">
-                <a href="index.html" class="active">الرئيسية</a>
+                <a href="index.html" class="active" data-i18n="home">الرئيسية</a>
             </nav>
         </div>
 
+        <!-- إضافة زر قائمة اللغات والكرة الأرضية بجانب الشعار في الأعلى -->
         <div class="nav-left">
+            <div class="language-switcher-header">
+                <span class="globe-icon">🌐</span>
+                <select id="langSelect" onchange="switchLanguage(this.value)">
+                    <option value="ar-dz">العربية (الجزائر)</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+
             <div class="search-container">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="searchInput" placeholder="ابحث عن فيلم أو مسلسل...">
+                <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="ابحث عن فيلم أو مسلسل...">
             </div>
         </div>
     </header>
@@ -33,14 +44,14 @@
     <section class="hero-section" id="heroSection">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <span class="hero-badge"><i class="fa-solid fa-fire"></i> الأكثر مشاهدة اليوم</span>
+            <span class="hero-badge" data-i18n="trending_badge"><i class="fa-solid fa-fire"></i> الأكثر مشاهدة اليوم</span>
             <h1 class="hero-title" id="heroTitle">جاري التحميل...</h1>
-            <p class="hero-description" id="heroDesc">
+            <p class="hero-description" id="heroDesc" data-i18n="hero_desc">
                 استمتع بأحدث الأفلام والمسلسلات بجودة عالية حصرياً على Youb Cima.
             </p>
             <div class="hero-buttons">
                 <button class="btn btn-play" id="heroPlayBtn">
-                    <i class="fa-solid fa-play"></i> تشغيل الآن
+                    <i class="fa-solid fa-play"></i> <span data-i18n="watch_now">تشغيل الآن</span>
                 </button>
             </div>
         </div>
@@ -48,82 +59,82 @@
 
     <!-- السطر الأول: الأقسام الأساسية (الكل، أفلام، مسلسلات، أنمي) -->
     <div class="categories-bar" id="categoriesBar">
-        <button class="cat-btn active" data-section="all">الكل</button>
-        <button class="cat-btn" data-section="movies">أفلام</button>
-        <button class="cat-btn" data-section="tv">مسلسلات</button>
-        <button class="cat-btn" data-section="أنمي">أنمي</button>
+        <button class="cat-btn active" data-section="all" data-i18n="cat_all">الكل</button>
+        <button class="cat-btn" data-section="movies" data-i18n="cat_movies">أفلام</button>
+        <button class="cat-btn" data-section="tv" data-i18n="cat_series">مسلسلات</button>
+        <button class="cat-btn" data-section="أنمي" data-i18n="cat_anime">أنمي</button>
     </div>
 
-    <!-- السطر الثاني: تصنيفات المسلسلات حسب الدولة/اللغة (يظهر عند اختيار "مسلسلات" فقط) -->
+    <!-- السطر الثاني: تصنيفات المسلسلات حسب الدولة/اللغة -->
     <div class="series-sub-bar" id="seriesSubBar" style="display: none;">
-        <button class="series-sub-btn active" data-series-type="all">الكل</button>
-        <button class="series-sub-btn" data-series-type="مسلسلات عربية">مسلسلات عربية</button>
-        <button class="series-sub-btn" data-series-type="مسلسلات تركية">مسلسلات تركية</button>
-        <button class="series-sub-btn" data-series-type="مسلسلات كورية">مسلسلات كورية</button>
-        <button class="series-sub-btn" data-series-type="مسلسلات أجنبية">مسلسلات أجنبية</button>
+        <button class="series-sub-btn active" data-series-type="all" data-i18n="cat_all">الكل</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات عربية" data-i18n="series_arabic">مسلسلات عربية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات تركية" data-i18n="series_turkish">مسلسلات تركية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات كورية" data-i18n="series_korean">مسلسلات كورية</button>
+        <button class="series-sub-btn" data-series-type="مسلسلات أجنبية" data-i18n="series_foreign">مسلسلات أجنبية</button>
     </div>
 
-    <!-- السطر الثالث: زر الأحدث + تصنيفات IMDb الفرعية + القائمة المنسدلة للسنة (للأفلام) -->
+    <!-- السطر الثالث: زر الأحدث + تصنيفات IMDb الفرعية + القائمة المنسدلة للسنة -->
     <div class="sub-categories-bar" id="subCategoriesBar" style="display: none;">
         <div class="genres-scroll">
-            <button class="sub-cat-btn active" data-genre="all">الكل</button>
-            <button class="sub-cat-btn" data-genre="latest"><i class="fa-solid fa-bolt"></i> الأحدث</button>
-            <button class="sub-cat-btn" data-genre="أكشن">أكشن</button>
-            <button class="sub-cat-btn" data-genre="رعب">رعب</button>
-            <button class="sub-cat-btn" data-genre="دراما">دراما</button>
-            <button class="sub-cat-btn" data-genre="كوميديا">كوميديا</button>
-            <button class="sub-cat-btn" data-genre="خيال علمي">خيال علمي</button>
-            <button class="sub-cat-btn" data-genre="إثارة">إثارة</button>
-            <button class="sub-cat-btn" data-genre="مغامرة">مغامرة</button>
+            <button class="sub-cat-btn active" data-genre="all" data-i18n="cat_all">الكل</button>
+            <button class="sub-cat-btn" data-genre="latest"><i class="fa-solid fa-bolt"></i> <span data-i18n="genre_latest">الأحدث</span></button>
+            <button class="sub-cat-btn" data-genre="أكشن" data-i18n="genre_action">أكشن</button>
+            <button class="sub-cat-btn" data-genre="رعب" data-i18n="genre_horror">رعب</button>
+            <button class="sub-cat-btn" data-genre="دراما" data-i18n="genre_drama">دراما</button>
+            <button class="sub-cat-btn" data-genre="كوميديا" data-i18n="genre_comedy">كوميديا</button>
+            <button class="sub-cat-btn" data-genre="خيال علمي" data-i18n="genre_scifi">خيال علمي</button>
+            <button class="sub-cat-btn" data-genre="إثارة" data-i18n="genre_thriller">إثارة</button>
+            <button class="sub-cat-btn" data-genre="مغامرة" data-i18n="genre_adventure">مغامرة</button>
         </div>
 
-        <!-- قائمة منسدلة لسنة الإنتاج (تظهر في الأفلام فقط) -->
+        <!-- قائمة منسدلة لسنة الإنتاج -->
         <div class="dropdown-filter-container" id="yearDropdownContainer" style="display: none;">
             <select id="yearSelect" class="netflix-dropdown">
-                <option value="all">سنة الإنتاج: الكل</option>
+                <option value="all" data-i18n="year_all">سنة الإنتاج: الكل</option>
                 <option value="2026">2026</option>
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
                 <option value="2023">2023</option>
-                <option value="2022">2022 فما قبل</option>
+                <option value="2022" data-i18n="year_older">2022 فما قبل</option>
             </select>
         </div>
     </div>
 
-    <!-- صفوف الأفلام والمسلسلات الأفقية حسب الأقسام -->
+    <!-- صفوف الأفلام والمسلسلات الأفقية -->
     <main class="content-container">
         
         <section class="row-section">
-            <h2 class="row-title"><i class="fa-solid fa-fire"></i> الأكثر شهرة والأحدث</h2>
+            <h2 class="row-title"><i class="fa-solid fa-fire"></i> <span data-i18n="row_trending">الأكثر شهرة والأحدث</span></h2>
             <div class="row-cards" id="trendingRow"></div>
         </section>
 
         <section class="row-section">
-            <h2 class="row-title"><i class="fa-solid fa-tv"></i> مسلسلات</h2>
+            <h2 class="row-title"><i class="fa-solid fa-tv"></i> <span data-i18n="row_series">مسلسلات</span></h2>
             <div class="row-cards" id="turkishSeriesRow"></div>
         </section>
 
         <section class="row-section">
-            <h2 class="row-title"><i class="fa-solid fa-clapperboard"></i> أفلام</h2>
+            <h2 class="row-title"><i class="fa-solid fa-clapperboard"></i> <span data-i18n="row_movies">أفلام</span></h2>
             <div class="row-cards" id="arabicMoviesRow"></div>
         </section>
 
         <section class="row-section">
-            <h2 class="row-title"><i class="fa-solid fa-dragon"></i> أنمي وكرتون</h2>
+            <h2 class="row-title"><i class="fa-solid fa-dragon"></i> <span data-i18n="row_anime">أنمي وكرتون</span></h2>
             <div class="row-cards" id="animeRow"></div>
         </section>
 
     </main>
 
-    <!-- شريط التنقل السفلي للهواتف (تم استبدال المزيد بالمفضلة) -->
+    <!-- شريط التنقل السفلي للهواتف -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
             <i class="fa-solid fa-house"></i>
-            <span>الرئيسية</span>
+            <span data-i18n="home">الرئيسية</span>
         </a>
         <a href="#" class="nav-item" onclick="document.getElementById('searchInput')?.focus(); return false;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <span>بحث</span>
+            <span data-i18n="search_bottom">بحث</span>
         </a>
         <a href="#" class="nav-item">
             <i class="fa-brands fa-telegram"></i>
@@ -131,7 +142,7 @@
         </a>
         <a href="index.html?view=favorites" class="nav-item" id="favBottomNav">
             <i class="fa-solid fa-heart" style="color: #e50914;"></i>
-            <span>المفضلة</span>
+            <span data-i18n="favorites">المفضلة</span>
         </a>
     </nav>
 
