@@ -278,6 +278,46 @@
         let activeServerNum = 1;
         let currentMovieData = null;
 
+        // التحكم في تشغيل إعلان Popunder على إجراءات المشاهدة بحد أقصى مرتين
+        const WATCH_POP_MAX = 2;
+        const WATCH_POP_KEY = 'youbcima_watch_pop_count';
+        const MONETAG_POP_ZONE = '12344452';
+        const MONETAG_POP_SRC = 'https://al5sm.com/tag.min.js';
+        let monetagPopLoaded = false;
+
+        function getWatchPopCount() {
+            try {
+                return parseInt(sessionStorage.getItem(WATCH_POP_KEY) || '0', 10) || 0;
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        function setWatchPopCount(count) {
+            try {
+                sessionStorage.setItem(WATCH_POP_KEY, String(count));
+            } catch (e) {}
+        }
+
+        function triggerWatchPopunder() {
+            const currentCount = getWatchPopCount();
+            if (currentCount >= WATCH_POP_MAX) return;
+
+            setWatchPopCount(currentCount + 1);
+
+            if (!monetagPopLoaded) {
+                monetagPopLoaded = true;
+                const target = [document.documentElement, document.body].filter(Boolean).pop();
+                if (target) {
+                    const s = document.createElement('script');
+                    s.dataset.zone = MONETAG_POP_ZONE;
+                    s.src = MONETAG_POP_SRC;
+                    s.async = true;
+                    target.appendChild(s);
+                }
+            }
+        }
+
         function getActiveLang() {
             if (typeof currentLang !== 'undefined' && currentLang) {
                 return currentLang;
@@ -388,6 +428,7 @@
         }
 
         function changeServer(num) {
+            triggerWatchPopunder();
             activeServerNum = num;
             document.querySelectorAll('.server-btn').forEach((btn, idx) => {
                 if (idx + 1 === num) btn.classList.add('active');
@@ -480,12 +521,14 @@
 
                     if (seasonSelect) {
                         seasonSelect.onchange = (e) => {
+                            triggerWatchPopunder();
                             currentSeason = e.target.value;
                             updatePlayer();
                         };
                     }
                     if (episodeSelect) {
                         episodeSelect.onchange = (e) => {
+                            triggerWatchPopunder();
                             currentEpisode = e.target.value;
                             updatePlayer();
                         };
