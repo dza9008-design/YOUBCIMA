@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta id="metaDesc" name="description" content="مشاهدة أحدث الأفلام والمسلسلات أونلاين بجودة عالية على Youb Cima.">
     <title>مشاهدة العرض - Youb Cima</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -180,7 +181,7 @@
     </div>
 
     <main class="content-container watch-container" style="max-width: 900px; margin-top: 20px;">
-        
+
         <!-- أزرار اختيار السيرفرات -->
         <div class="servers-box">
             <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> <span data-i18n="servers_label">السيرفرات:</span></span>
@@ -217,7 +218,7 @@
                     <i class="fa-solid fa-heart"></i> <span id="favBtnText" data-i18n="add_fav">أضف للمفضلة</span>
                 </button>
             </div>
-            
+
             <div class="meta-badges" id="metaBadges"></div>
 
             <div id="movieDesc" class="watch-text"></div>
@@ -268,7 +269,13 @@
         let activeServerNum = 1;
         let currentMovieData = null;
 
-        // إدارة المفضلة
+        function getActiveLang() {
+            if (typeof currentLang !== 'undefined' && currentLang) {
+                return currentLang;
+            }
+            return localStorage.getItem('user_lang') || 'ar-dz';
+        }
+
         function getFavorites() {
             return JSON.parse(localStorage.getItem('youbcima_favorites') || '[]');
         }
@@ -305,23 +312,25 @@
         function updateFavButtonsUI() {
             const btn = document.getElementById('watchFavBtn');
             const txt = document.getElementById('favBtnText');
-            if (!btn || !currentMovieId) return;
+            if (!btn || !txt || !currentMovieId) return;
+
+            const lang = getActiveLang();
+            const translations = (typeof siteTranslations !== 'undefined' && siteTranslations[lang]) ? siteTranslations[lang] : {};
 
             if (isFavorite(currentMovieId)) {
                 btn.classList.add('active');
-                txt.textContent = siteTranslations[currentLang]?.remove_fav || (currentLang === 'fr' ? 'Retirer des favoris' : currentLang === 'en' ? 'Remove from Favorites' : 'إزالة من المفضلة');
+                txt.textContent = translations.remove_fav || (lang === 'fr' ? 'Retirer des favoris' : lang === 'en' ? 'Remove from Favorites' : 'إزالة من المفضلة');
             } else {
                 btn.classList.remove('active');
-                txt.textContent = siteTranslations[currentLang]?.add_fav || (currentLang === 'fr' ? 'Ajouter aux favoris' : currentLang === 'en' ? 'Add to Favorites' : 'أضف للمفضلة');
+                txt.textContent = translations.add_fav || (lang === 'fr' ? 'Ajouter aux favoris' : lang === 'en' ? 'Add to Favorites' : 'أضف للمفضلة');
             }
         }
 
-        // سجل المشاهدة (أكمل المشاهدة)
         function saveToHistory() {
             if (!currentMovieData) return;
             let history = JSON.parse(localStorage.getItem('youbcima_history') || '[]');
             history = history.filter(item => String(item.id) !== String(currentMovieId));
-            
+
             history.unshift({
                 id: currentMovieId,
                 title: currentMovieData.title,
@@ -338,44 +347,32 @@
 
         function updatePlayer() {
             const iframe = document.getElementById('videoIframe');
-            if (!currentMovieId) return;
+            if (!iframe || !currentMovieId) return;
 
             if (activeServerNum === 1) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    iframe.src = `https://vidlink.pro/movie/${currentMovieId}`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://vidlink.pro/movie/${currentMovieId}`;
             } else if (activeServerNum === 2) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`;
-                } else {
-                    iframe.src = `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`
+                    : `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
             } else if (activeServerNum === 3) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    iframe.src = `https://embed.su/embed/movie/${currentMovieId}`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://embed.su/embed/movie/${currentMovieId}`;
             } else if (activeServerNum === 4) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`;
-                } else {
-                    iframe.src = `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
             } else if (activeServerNum === 5) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`;
-                } else {
-                    iframe.src = `https://2embed.cc/embed/${currentMovieId}`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://2embed.cc/embed/${currentMovieId}`;
             } else if (activeServerNum === 6) {
-                if (currentMovieType === 'tv') {
-                    iframe.src = `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`;
-                } else {
-                    iframe.src = `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1`;
-                }
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1`;
             }
 
             saveToHistory();
@@ -390,43 +387,61 @@
             updatePlayer();
         }
 
-        // دالة مخصصة لتبديل اللغات داخل صفحة المشاهدة وتحديث النصوص الفورية
+        function populateSeasonEpisodeSelects() {
+            const seasonSelect = document.getElementById('seasonSelect');
+            const episodeSelect = document.getElementById('episodeSelect');
+            if (!seasonSelect || !episodeSelect) return;
+
+            const lang = getActiveLang();
+            const currentS = seasonSelect.value || currentSeason;
+            const currentE = episodeSelect.value || currentEpisode;
+
+            seasonSelect.innerHTML = '';
+            episodeSelect.innerHTML = '';
+
+            for (let s = 1; s <= 10; s++) {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = (lang === 'fr' ? 'Saison ' : lang === 'en' ? 'Season ' : 'الموسم ') + s;
+                if (String(s) === String(currentS)) opt.selected = true;
+                seasonSelect.appendChild(opt);
+            }
+
+            for (let e = 1; e <= 50; e++) {
+                const opt = document.createElement('option');
+                opt.value = e;
+                opt.textContent = (lang === 'fr' ? 'Épisode ' : lang === 'en' ? 'Episode ' : 'الحلقة ') + e;
+                if (String(e) === String(currentE)) opt.selected = true;
+                episodeSelect.appendChild(opt);
+            }
+        }
+
         function switchLanguage(lang) {
             if (typeof applyLanguage === 'function') {
                 applyLanguage(lang);
             }
             updateFavButtonsUI();
-            
-            // إعادة بناء خيارات المواسم والحلقات بلغة القائمة الجديدة
-            const seasonSelect = document.getElementById('seasonSelect');
-            const episodeSelect = document.getElementById('episodeSelect');
-            if (seasonSelect && episodeSelect) {
-                const currentS = seasonSelect.value;
-                const currentE = episodeSelect.value;
-                
-                seasonSelect.innerHTML = '';
-                episodeSelect.innerHTML = '';
-                for (let s = 1; s <= 10; s++) {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = (currentLang === 'fr' ? 'Saison ' : currentLang === 'en' ? 'Season ' : 'الموسم ') + s;
-                    if (String(s) === String(currentS)) opt.selected = true;
-                    seasonSelect.appendChild(opt);
-                }
-                for (let e = 1; e <= 50; e++) {
-                    const opt = document.createElement('option');
-                    opt.value = e;
-                    opt.textContent = (currentLang === 'fr' ? 'Épisode ' : currentLang === 'en' ? 'Episode ' : 'الحلقة ') + e;
-                    if (String(e) === String(currentE)) opt.selected = true;
-                    episodeSelect.appendChild(opt);
-                }
+            populateSeasonEpisodeSelects();
+        }
+
+        function updatePageSeoMeta(movie) {
+            const safeTitle = movie.title || 'مشاهدة العرض';
+            const yearText = movie.year ? ` (${movie.year})` : '';
+            const pageTitle = `مشاهدة ${safeTitle}${yearText} - Youb Cima`;
+            document.title = pageTitle;
+
+            const metaDesc = document.getElementById('metaDesc');
+            if (metaDesc) {
+                const overviewText = movie.overview || '';
+                const combined = overviewText ? `${pageTitle} - ${overviewText}` : pageTitle;
+                metaDesc.setAttribute('content', combined.slice(0, 160));
             }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             let savedLang = localStorage.getItem('user_lang');
             if (!savedLang) {
-                let phoneLang = navigator.language || navigator.userLanguage;
+                const phoneLang = navigator.language || navigator.userLanguage || 'ar';
                 if (phoneLang.startsWith('ar')) savedLang = 'ar-dz';
                 else if (phoneLang.startsWith('fr')) savedLang = 'fr';
                 else if (phoneLang.startsWith('es')) savedLang = 'es';
@@ -452,49 +467,39 @@
 
                 if (currentMovieType === 'tv') {
                     if (seriesControls) seriesControls.style.display = 'flex';
-                    
-                    if (seasonSelect && episodeSelect) {
-                        seasonSelect.innerHTML = '';
-                        episodeSelect.innerHTML = '';
-                        for (let s = 1; s <= 10; s++) {
-                            const opt = document.createElement('option');
-                            opt.value = s;
-                            opt.textContent = (currentLang === 'fr' ? 'Saison ' : currentLang === 'en' ? 'Season ' : 'الموسم ') + s;
-                            if (String(s) === String(currentSeason)) opt.selected = true;
-                            seasonSelect.appendChild(opt);
-                        }
-                        for (let e = 1; e <= 50; e++) {
-                            const opt = document.createElement('option');
-                            opt.value = e;
-                            opt.textContent = (currentLang === 'fr' ? 'Épisode ' : currentLang === 'en' ? 'Episode ' : 'الحلقة ') + e;
-                            if (String(e) === String(currentEpisode)) opt.selected = true;
-                            episodeSelect.appendChild(opt);
-                        }
+                    populateSeasonEpisodeSelects();
 
+                    if (seasonSelect) {
                         seasonSelect.onchange = (e) => {
                             currentSeason = e.target.value;
                             updatePlayer();
                         };
+                    }
+                    if (episodeSelect) {
                         episodeSelect.onchange = (e) => {
                             currentEpisode = e.target.value;
                             updatePlayer();
                         };
                     }
-                } else {
-                    if (seriesControls) seriesControls.style.display = 'none';
+                } else if (seriesControls) {
+                    seriesControls.style.display = 'none';
                 }
 
-                // جلب بيانات العمل من movies.json
                 fetch('movies.json')
                     .then(response => response.json())
                     .then(movies => {
                         const movie = movies.find(m => String(m.id) === String(currentMovieId));
                         if (movie) {
                             currentMovieData = movie;
+                            updatePageSeoMeta(movie);
+
+                            const lang = getActiveLang();
+                            const translations = (typeof siteTranslations !== 'undefined' && siteTranslations[lang]) ? siteTranslations[lang] : {};
+
                             const titleEl = document.getElementById('movieTitle');
                             const descEl = document.getElementById('movieDesc');
                             if (titleEl) titleEl.textContent = movie.title || "بدون عنوان";
-                            if (descEl) descEl.textContent = movie.overview || siteTranslations[currentLang]?.no_overview || "لا يوجد وصف متوفر.";
+                            if (descEl) descEl.textContent = movie.overview || translations.no_overview || "لا يوجد وصف متوفر.";
 
                             const badgesContainer = document.getElementById('metaBadges');
                             if (badgesContainer) {
@@ -509,19 +514,26 @@
 
                         updatePlayer();
 
-                        // تعبئة قسم "قد تهمك" مع زر المفضلة على البوستر
                         const relatedContainer = document.getElementById('relatedContainer');
                         if (relatedContainer) {
                             relatedContainer.innerHTML = '';
+                            const lang = getActiveLang();
+
                             movies.filter(m => String(m.id) !== String(currentMovieId)).forEach(m => {
                                 const card = document.createElement('div');
                                 card.className = 'movie-card';
-                                const badgeText = (m.type === 'tv') ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD';
+                                const badgeText = (m.type === 'tv')
+                                    ? (lang === 'fr' ? 'Série' : lang === 'en' ? 'Series' : 'مسلسل')
+                                    : 'HD';
                                 const favActive = isFavorite(m.id) ? 'active' : '';
+                                const safeMovieJson = JSON.stringify(m)
+                                    .replace(/&/g, '&amp;')
+                                    .replace(/"/g, '&quot;')
+                                    .replace(/'/g, '&#39;');
 
                                 card.innerHTML = `
                                     <div class="poster-wrapper">
-                                        <button class="poster-fav-btn ${favActive}" onclick="event.stopPropagation(); toggleFavQuick(this, ${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                                        <button type="button" class="poster-fav-btn ${favActive}" onclick="event.stopPropagation(); toggleFavQuick(this, ${safeMovieJson})">
                                             <i class="fa-solid fa-heart"></i>
                                         </button>
                                         <img src="${m.poster}" alt="${m.title}">
