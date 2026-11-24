@@ -2,10 +2,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import datetime
 import json
 import time
+from urllib.parse import quote
 import requests
 
 API_KEY = "3fc9a599ce632eacdf94e9382a49da27"
 BASE_URL = "https://api.themoviedb.org/3"
+SITE_URL = "https://youbcima.com"
 
 STREAM_SERVERS = [
     {
@@ -132,7 +134,6 @@ def fetch_content(media_type, language=None, pages=5, sort_by="popularity.desc")
       if response.status_code == 200:
         data = response.json().get("results", [])
         for item in data:
-          # استبعاد أي محتوى إباحي أو بدون بوستر
           if item.get("adult") is True:
             continue
           if not item.get("poster_path"):
@@ -189,10 +190,53 @@ def fetch_content(media_type, language=None, pages=5, sort_by="popularity.desc")
   return results
 
 
+def generate_sitemap(items, output_path="sitemap.xml"):
+  today = datetime.date.today().isoformat()
+  lines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      "  <url>",
+      f"    <loc>{SITE_URL}/</loc>",
+      f"    <lastmod>{today}</lastmod>",
+      "    <changefreq>daily</changefreq>",
+      "    <priority>1.0</priority>",
+      "  </url>",
+  ]
+
+  seen_locs = {f"{SITE_URL}/"}
+
+  for item in items:
+    item_id = item.get("id")
+    if not item_id:
+      continue
+
+    encoded_id = quote(str(item_id))
+    loc = f"{SITE_URL}/watch.html?id={encoded_id}"
+    if loc in seen_locs:
+      continue
+    seen_locs.add(loc)
+
+    lastmod = item.get("date") or today
+    lines.extend([
+        "  <url>",
+        f"    <loc>{loc}</loc>",
+        f"    <lastmod>{lastmod}</lastmod>",
+        "    <changefreq>weekly</changefreq>",
+        "    <priority>0.8</priority>",
+        "  </url>",
+    ])
+
+  lines.append("</urlset>")
+
+  with open(output_path, "w", encoding="utf-8") as f:
+    f.write("\n".join(lines) + "\n")
+
+  print(f"🗺️ تم تحديث {output_path} بعدد {len(seen_locs)} رابط.")
+
+
 def main():
   all_media = []
 
-  # جلب متنوع (أشهر الأعمال + أعمال متنوعة حسب التقييم/التصويت) بدون محتوى إباحي
   tasks = [
       ("movie", "en", 10, "popularity.desc"),
       ("movie", "en", 5, "vote_count.desc"),
@@ -236,6 +280,8 @@ def main():
 
   with open("movies.json", "w", encoding="utf-8") as f:
     json.dump(approved_media, f, ensure_ascii=False, indent=2)
+
+  generate_sitemap(approved_media, "sitemap.xml")
 
   print(
       f"✅ تم الانتهاء بنجاح! تم نشر {len(approved_media)} عمل صالح وحذف"
