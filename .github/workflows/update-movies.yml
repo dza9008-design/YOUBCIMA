@@ -2,14 +2,14 @@ name: Run Movie Bot Automatically
 
 on:
   schedule:
-    - cron: '0 */2 * * *' # يعمل تلقائياً كل ساعتين
+    - cron: '0 2 * * *' # يعمل تلقائياً مرة واحدة يومياً (02:00 UTC / 03:00 بتوقيت الجزائر)
   workflow_dispatch: # يتيح لك تشغيله يدوياً في أي وقت من زر Run workflow
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # منح الصلاحية للبوت لتحديث ملف movies.json ورفعه
+      contents: write # منح الصلاحية لرفع تحديث ملف movies.json إلى المستودع
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
