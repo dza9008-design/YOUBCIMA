@@ -7,8 +7,6 @@ import requests
 API_KEY = "3fc9a599ce632eacdf94e9382a49da27"
 BASE_URL = "https://api.themoviedb.org/3"
 
-# قوالب سيرفرات التشغيل (عدّلها أو أضف سيرفراتك حسب الحاجة)
-# {type} ستكون movie أو tv ، و {id} هو معرف العمل في TMDB
 STREAM_SERVERS = [
     {
         "name": "سيرفر 1",
@@ -78,42 +76,33 @@ def determine_section(item, media_type):
 
 
 def build_candidate_streams(media_type, tmdb_id):
-  streams = []
-  for srv in STREAM_SERVERS:
-    streams.append({
-        "server": srv["name"],
-        "url": srv["url"].format(type=media_type, id=tmdb_id),
-    })
-  return streams
+  return [
+      {
+          "server": srv["name"],
+          "url": srv["url"].format(type=media_type, id=tmdb_id),
+      }
+      for srv in STREAM_SERVERS
+  ]
 
 
 def is_stream_working(url, timeout=6):
-  """يفحص إذا كان رابط السيرفر يستجيب ولا يعطي خطأ."""
   try:
     resp = requests.head(
         url, headers=HEADERS, timeout=timeout, allow_redirects=True
     )
-    # بعض السيرفرات لا تدعم HEAD وترجع 405 أو 403، فنجرب GET خفيف
     if resp.status_code in (405, 403, 400):
       resp = requests.get(
           url, headers=HEADERS, timeout=timeout, allow_redirects=True, stream=True
       )
       resp.close()
-
-    # نعتبر الرابط متاحاً إذا كانت الحالة 200
     return resp.status_code == 200
   except requests.RequestException:
     return False
 
 
 def verify_and_filter_entry(entry):
-  """يفحص سيرفرات العمل؛ إذا لم يعمل أي سيرفر يُرجع None ليتم حذفه."""
   candidates = build_candidate_streams(entry["type"], entry["id"])
-  working_streams = []
-
-  for stream in candidates:
-    if is_stream_working(stream["url"]):
-      working_streams.append(stream)
+  working_streams = [s for s in candidates if is_stream_working(s["url"])]
 
   if not working_streams:
     return None
@@ -123,7 +112,7 @@ def verify_and_filter_entry(entry):
   return entry
 
 
-def fetch_content(media_type, language=None, pages=5):
+def fetch_content(media_type, language=None, pages=5, sort_by="popularity.desc"):
   results = []
   endpoint = f"{BASE_URL}/discover/{media_type}"
 
@@ -131,7 +120,8 @@ def fetch_content(media_type, language=None, pages=5):
     params = {
         "api_key": API_KEY,
         "language": "ar-SA",
-        "sort_by": "popularity.desc",
+        "sort_by": sort_by,
+        "include_adult": "false",
         "page": page,
     }
     if language:
@@ -142,6 +132,9 @@ def fetch_content(media_type, language=None, pages=5):
       if response.status_code == 200:
         data = response.json().get("results", [])
         for item in data:
+          # استبعاد أي محتوى إباحي أو بدون بوستر
+          if item.get("adult") is True:
+            continue
           if not item.get("poster_path"):
             continue
 
@@ -192,32 +185,31 @@ def fetch_content(media_type, language=None, pages=5):
       print(f"❌ خطأ في الاتصال بالإنترنت أو TMDB: {e}")
       break
 
-    time.sleep(0.3)
+    time.sleep(0.25)
   return results
 
 
 def main():
   all_media = []
 
+  # جلب متنوع (أشهر الأعمال + أعمال متنوعة حسب التقييم/التصويت) بدون محتوى إباحي
   tasks = [
-      ("movie", "en", 10),
-      ("tv", "en", 10),
-      ("movie", "ar", 3),
-      ("tv", "ar", 3),
-      ("tv", "tr", 5),
-      ("movie", "tr", 2),
-      ("tv", "ko", 5),
-      ("movie", "ko", 3),
-      ("tv", "ja", 6),
+      ("movie", "en", 10, "popularity.desc"),
+      ("movie", "en", 5, "vote_count.desc"),
+      ("tv", "en", 10, "popularity.desc"),
+      ("movie", "ar", 4, "popularity.desc"),
+      ("tv", "ar", 4, "popularity.desc"),
+      ("tv", "tr", 6, "popularity.desc"),
+      ("movie", "tr", 3, "popularity.desc"),
+      ("tv", "ko", 6, "popularity.desc"),
+      ("movie", "ko", 4, "popularity.desc"),
+      ("tv", "ja", 6, "popularity.desc"),
   ]
 
-  print(
-      "🚀 جاري بدء سحب وتصنيف الأعمال بالأسماء الأصلية مع الترجمة بين"
-      " قوسين..."
-  )
-  for m_type, lang, pages in tasks:
-    print(f"⏳ جاري سحب [{m_type}] بلغة [{lang}]...")
-    all_media.extend(fetch_content(m_type, lang, pages))
+  print("🚀 جاري سحب وتصنيف الأعمال المتنوعة مع حظر المحتوى الإباحي...")
+  for m_type, lang, pages, sort_by in tasks:
+    print(f"⏳ جاري سحب [{m_type}] بلغة [{lang}] بترتيب [{sort_by}]...")
+    all_media.extend(fetch_content(m_type, lang, pages, sort_by))
 
   unique_media = list(
       {f"{item['type']}_{item['id']}": item for item in all_media}.values()
@@ -230,7 +222,6 @@ def main():
   approved_media = []
   removed_count = 0
 
-  # فحص متوازٍ لتسريع العملية
   with ThreadPoolExecutor(max_workers=15) as executor:
     futures = {
         executor.submit(verify_and_filter_entry, item): item
