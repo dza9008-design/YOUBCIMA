@@ -3,9 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="monetag" content="54cbd74a335ae9bc2502573d700c3b57">
     <title>Youb Cima - متعة المشاهدة</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .top-ads-wrapper {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.25);
+        }
+        .ad-slot-box {
+            min-width: 320px;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
 
@@ -39,6 +60,28 @@
             </div>
         </div>
     </header>
+
+    <!-- منطقة الإعلانات العلوية (Adsterra + Monetag) -->
+    <div class="top-ads-wrapper" id="topAdsWrapper">
+        <!-- خانة إعلان Adsterra (320x50) -->
+        <div class="ad-slot-box" id="adsterra-top-slot">
+            <script>
+                atOptions = {
+                    'key' : 'c760643985841a04f7c46f2eb42e7b58',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+            </script>
+            <script data-cfasync="false" src="https://bancadeltempoidea.org/22/c760643985841a04f7c46f2eb42e7b58"></script>
+        </div>
+
+        <!-- خانة إعلان Monetag (ضع كود الشبكة الثانية هنا عند استخراجه) -->
+        <div class="ad-slot-box" id="monetag-top-slot">
+            <!-- MONETAG_AD_CODE_HERE -->
+        </div>
+    </div>
 
     <!-- قسم الهيرو البارز (Featured Showcase) -->
     <section class="hero-section" id="heroSection">
