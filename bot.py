@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import datetime
 import json
+import re
 import time
 from urllib.parse import quote
 import requests
@@ -52,17 +53,34 @@ GENRES_MAP = {
 
 # كلمات بحث مخصصة لجلب الدراما العمودية والحلقات القصيرة من Dailymotion
 VERTICAL_DRAMA_QUERIES = [
-    "دراما عمودية",
-    "مسلسل عمودي",
+    "short drama full",
+    "reelshort drama",
+    "dramabox drama",
+    "netshort drama",
     "دراما قصيرة مترجمة",
+    "مسلسل قصير مترجم",
     "مسلسل قصير مدبلج",
     "vertical drama",
-    "short drama sub",
 ]
 
 VERTICAL_KEYWORDS = (
-    "عمود", "قصير", "دراما", "حلقة", "حلقات", "vertical", "short", "drama", "ep", "episode"
+    "عمود", "قصير", "دراما", "حلقة", "حلقات", "vertical", "short", "drama", "ep", "episode", "reelshort", "dramabox", "netshort"
 )
+
+# كلمات مستبعدة لتصفية المحتوى الطبي والمنشورات العشوائية غير الدرامية
+EXCLUDED_KEYWORDS = (
+    "قسطرة", "اللثة", "الكيس الدهني", "عملية", "طبيب", "دكتور", "مريض",
+    "علاج", "مرض", "صحة", "جراحة", "أسنان", "الحالب", "catheter", "surgery",
+    "doctor", "clinic", "dental", "medical", "health"
+)
+
+
+def clean_html_text(text):
+    if not text:
+        return ""
+    text = re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"<[^>]+>", "", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def determine_section(item, media_type):
@@ -237,19 +255,21 @@ def fetch_vertical_dramas(queries=None, limit_per_query=20):
                     continue
 
                 duration = vid.get("duration") or 0
-                # استبعاد الإعلانات القصيرة جداً والمقاطع الطويلة جداً غير المناسبة للدراما القصيرة
-                if duration < 45 or duration > 5400:
+                if duration < 60 or duration > 7200:
                     continue
 
                 poster = vid.get("thumbnail_720_url") or vid.get("thumbnail_480_url")
                 if not poster:
                     continue
 
-                title = (vid.get("title") or "").strip()
-                desc = (vid.get("description") or "").strip()
+                title = clean_html_text(vid.get("title") or "")
+                desc = clean_html_text(vid.get("description") or "")
                 haystack = f"{title} {desc}".lower()
 
-                if not title or not any(kw in haystack for kw in VERTICAL_KEYWORDS):
+                if not title or any(bad in haystack for bad in EXCLUDED_KEYWORDS):
+                    continue
+
+                if not any(kw in haystack for kw in VERTICAL_KEYWORDS):
                     continue
 
                 seen_ids.add(dm_id)
