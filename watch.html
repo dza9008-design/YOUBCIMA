@@ -318,6 +318,31 @@
             }
         }
 
+        function getDirectEmbedUrl(movie) {
+            if (!movie) return '';
+            if (movie.stream_url && /^https?:\/\//i.test(movie.stream_url)) {
+                if (!movie.stream_url.includes('vidsrc.') && !movie.stream_url.includes('autoembed.cc')) {
+                    return movie.stream_url;
+                }
+            }
+            if (movie.embedUrl && /^https?:\/\//i.test(movie.embedUrl)) {
+                return movie.embedUrl;
+            }
+            return '';
+        }
+
+        function getTmdbLookupId(movie) {
+            if (movie && movie.tmdb_id) return movie.tmdb_id;
+            const rawId = String(currentMovieId || '');
+            if (/^\d+$/.test(rawId)) return rawId;
+            return '';
+        }
+
+        function getTmdbLookupType(movie) {
+            if (movie && movie.tmdb_type) return movie.tmdb_type;
+            return currentMovieType === 'tv' ? 'tv' : 'movie';
+        }
+
         function getActiveLang() {
             if (typeof currentLang !== 'undefined' && currentLang) {
                 return currentLang;
@@ -398,30 +423,41 @@
             const iframe = document.getElementById('videoIframe');
             if (!iframe || !currentMovieId) return;
 
+            const directUrl = getDirectEmbedUrl(currentMovieData);
+            if (directUrl) {
+                iframe.src = directUrl;
+                saveToHistory();
+                return;
+            }
+
+            const tmdbId = getTmdbLookupId(currentMovieData);
+            const tmdbType = getTmdbLookupType(currentMovieData);
+            if (!tmdbId) return;
+
             if (activeServerNum === 1) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
-                    : `https://vidlink.pro/movie/${currentMovieId}`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://vidlink.pro/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
+                    : `https://vidlink.pro/movie/${tmdbId}`;
             } else if (activeServerNum === 2) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`
-                    : `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${currentSeason}&episode=${currentEpisode}`
+                    : `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
             } else if (activeServerNum === 3) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
-                    : `https://embed.su/embed/movie/${currentMovieId}`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://embed.su/embed/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
+                    : `https://embed.su/embed/movie/${tmdbId}`;
             } else if (activeServerNum === 4) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
-                    : `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://player.autoembed.cc/embed/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
+                    : `https://player.autoembed.cc/embed/movie/${tmdbId}`;
             } else if (activeServerNum === 5) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`
-                    : `https://2embed.cc/embed/${currentMovieId}`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://2embed.cc/embedtv/${tmdbId}&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://2embed.cc/embed/${tmdbId}`;
             } else if (activeServerNum === 6) {
-                iframe.src = currentMovieType === 'tv'
-                    ? `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`
-                    : `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1`;
+                iframe.src = tmdbType === 'tv'
+                    ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`;
             }
 
             saveToHistory();
@@ -543,6 +579,19 @@
                         const movie = movies.find(m => String(m.id) === String(currentMovieId));
                         if (movie) {
                             currentMovieData = movie;
+                            if (movie.type) {
+                                currentMovieType = movie.type;
+                            } else if (movie.section === 'دراما قصيرة' || movie.section === 'أفلام قصيرة') {
+                                currentMovieType = 'short';
+                            }
+
+                            if (currentMovieType === 'tv' && seriesControls) {
+                                seriesControls.style.display = 'flex';
+                                populateSeasonEpisodeSelects();
+                            } else if (seriesControls) {
+                                seriesControls.style.display = 'none';
+                            }
+
                             updatePageSeoMeta(movie);
 
                             const lang = getActiveLang();
@@ -574,9 +623,12 @@
                             movies.filter(m => String(m.id) !== String(currentMovieId)).forEach(m => {
                                 const card = document.createElement('div');
                                 card.className = 'movie-card';
-                                const badgeText = (m.type === 'tv')
-                                    ? (lang === 'fr' ? 'Série' : lang === 'en' ? 'Series' : 'مسلسل')
-                                    : 'HD';
+                                const itemType = m.type || ((m.section === 'دراما قصيرة' || m.section === 'أفلام قصيرة') ? 'short' : 'movie');
+                                const badgeText = itemType === 'short'
+                                    ? (lang === 'fr' ? 'Court' : lang === 'en' ? 'Short' : 'قصير')
+                                    : ((itemType === 'tv')
+                                        ? (lang === 'fr' ? 'Série' : lang === 'en' ? 'Series' : 'مسلسل')
+                                        : 'HD');
                                 const favActive = isFavorite(m.id) ? 'active' : '';
                                 const safeMovieJson = JSON.stringify(m)
                                     .replace(/&/g, '&amp;')
@@ -594,7 +646,7 @@
                                     <div class="movie-title">${m.title}</div>
                                 `;
                                 card.onclick = () => {
-                                    window.location.href = `watch.html?id=${m.id}&type=${m.type || 'movie'}`;
+                                    window.location.href = `watch.html?id=${m.id}&type=${itemType}`;
                                 };
                                 relatedContainer.appendChild(card);
                             });
