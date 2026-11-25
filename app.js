@@ -13,6 +13,7 @@ const siteTranslations = {
         cat_movies: "أفلام",
         cat_series: "مسلسلات",
         cat_anime: "أنمي",
+        cat_shorts: "دراما قصيرة",
         series_arabic: "مسلسلات عربية",
         series_turkish: "مسلسلات تركية",
         series_korean: "مسلسلات كورية",
@@ -59,6 +60,7 @@ const siteTranslations = {
         cat_movies: "Movies",
         cat_series: "Series",
         cat_anime: "Anime",
+        cat_shorts: "Short Drama",
         series_arabic: "Arabic Series",
         series_turkish: "Turkish Series",
         series_korean: "Korean Series",
@@ -105,6 +107,7 @@ const siteTranslations = {
         cat_movies: "Films",
         cat_series: "Séries",
         cat_anime: "Anime",
+        cat_shorts: "Drame court",
         series_arabic: "Séries arabes",
         series_turkish: "Séries turques",
         series_korean: "Séries coréennes",
@@ -151,6 +154,7 @@ const siteTranslations = {
         cat_movies: "Películas",
         cat_series: "Series",
         cat_anime: "Anime",
+        cat_shorts: "Drama corto",
         series_arabic: "Series árabes",
         series_turkish: "Series turcas",
         series_korean: "Series coreanas",
@@ -189,6 +193,21 @@ const siteTranslations = {
 };
 
 let currentLang = 'ar-dz';
+
+function isShortDrama(item) {
+    if (!item) return false;
+    return (
+        item.type === 'short' ||
+        item.section === 'دراما قصيرة' ||
+        item.section === 'أفلام قصيرة' ||
+        (Array.isArray(item.genres) && (item.genres.includes('دراما قصيرة') || item.genres.includes('أفلام قصيرة')))
+    );
+}
+
+function resolveWatchType(item) {
+    if (isShortDrama(item)) return 'short';
+    return item.type || (item.section && item.section.includes('مسلسل') ? 'tv' : 'movie');
+}
 
 // دوال إدارة اللغات
 function applyLanguage(lang) {
@@ -255,7 +274,7 @@ function toggleFavorite(movie) {
             id: movie.id,
             title: movie.title,
             poster: movie.poster,
-            type: movie.type || 'movie',
+            type: resolveWatchType(movie),
             year: movie.year || '',
             rating: movie.rating || ''
         });
@@ -290,7 +309,10 @@ function createMovieCard(movie) {
     const card = document.createElement('div');
     card.className = 'movie-card';
     
-    const badgeType = movie.type === 'tv' ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD';
+    const resolvedType = resolveWatchType(movie);
+    const badgeType = resolvedType === 'short'
+        ? (currentLang === 'fr' ? 'Court' : currentLang === 'en' ? 'Short' : 'قصير')
+        : (movie.type === 'tv' ? (currentLang === 'fr' ? 'Série' : currentLang === 'en' ? 'Series' : 'مسلسل') : 'HD');
     const favActive = isFavorite(movie.id) ? 'active' : '';
     const favColor = favActive ? '#e50914' : '#fff';
     const favBg = favActive ? 'rgba(229, 9, 20, 0.2)' : 'rgba(0, 0, 0, 0.7)';
@@ -308,8 +330,7 @@ function createMovieCard(movie) {
     
     // التعديل السليم هنا لضمان الانتقال لصفحة المشاهدة بالمعرف والنوع
     card.onclick = () => {
-        const movieType = movie.type || (movie.section && movie.section.includes('مسلسل') ? 'tv' : 'movie');
-        window.location.href = `watch.html?id=${movie.id}&type=${movieType}`;
+        window.location.href = `watch.html?id=${movie.id}&type=${resolvedType}`;
     };
     return card;
 }
@@ -333,13 +354,13 @@ function renderRow(containerId, sectionName = null, genreName = null, typeFilter
     container.style.gap = '15px';
     container.style.overflowX = 'auto';
     
-    let filteredMovies = movies;
+    let filteredMovies = movies.filter(item => !isShortDrama(item));
     if (sectionName) {
-        filteredMovies = movies.filter(item => item.section === sectionName || (item.genres && item.genres.includes(sectionName)));
+        filteredMovies = filteredMovies.filter(item => item.section === sectionName || (item.genres && item.genres.includes(sectionName)));
     } else if (genreName) {
-        filteredMovies = movies.filter(item => item.genres && item.genres.includes(genreName));
+        filteredMovies = filteredMovies.filter(item => item.genres && item.genres.includes(genreName));
     } else if (typeFilter) {
-        filteredMovies = movies.filter(item => 
+        filteredMovies = filteredMovies.filter(item => 
             item.type === typeFilter || 
             (typeFilter === 'movie' && (item.section?.includes('أفلام') || item.section?.includes('فيلم'))) ||
             (typeFilter === 'tv' && (item.section?.includes('مسلسل') || item.section?.includes('مسلسلات')))
@@ -398,7 +419,7 @@ function renderContinueWatching() {
     history.forEach(item => {
         const card = document.createElement('div');
         card.className = 'movie-card';
-        const badgeText = item.type === 'tv' ? `م${item.season} ح${item.episode}` : 'HD';
+        const badgeText = item.type === 'tv' || item.type === 'short' ? `م${item.season || 1} ح${item.episode || 1}` : 'HD';
         const favActive = isFavorite(item.id) ? 'active' : '';
         const favColor = favActive ? '#e50914' : '#fff';
         const favBg = favActive ? 'rgba(229, 9, 20, 0.2)' : 'rgba(0, 0, 0, 0.7)';
@@ -415,8 +436,8 @@ function renderContinueWatching() {
         `;
 
         card.onclick = () => {
-            if (item.type === 'tv') {
-                window.location.href = `watch.html?id=${item.id}&type=tv&s=${item.season}&e=${item.episode}`;
+            if (item.type === 'tv' || item.type === 'short') {
+                window.location.href = `watch.html?id=${item.id}&type=${item.type}&s=${item.season || 1}&e=${item.episode || 1}`;
             } else {
                 window.location.href = `watch.html?id=${item.id}&type=movie`;
             }
@@ -495,8 +516,7 @@ function initApp() {
 
         if (heroPlayBtn) {
             heroPlayBtn.onclick = () => {
-                const featuredType = featured.type || (featured.section && featured.section.includes('مسلسل') ? 'tv' : 'movie');
-                window.location.href = `watch.html?id=${featured.id}&type=${featuredType}`;
+                window.location.href = `watch.html?id=${featured.id}&type=${resolveWatchType(featured)}`;
             };
         }
     }
@@ -523,25 +543,28 @@ function setupCategoryFilter() {
         let filtered = movies;
         let sectionLabel = "";
 
-        if (currentMain === 'movies') {
-            filtered = movies.filter(item => 
+        if (currentMain === 'shorts') {
+            filtered = movies.filter(item => isShortDrama(item));
+            sectionLabel = siteTranslations[currentLang].cat_shorts;
+        } else if (currentMain === 'movies') {
+            filtered = movies.filter(item => !isShortDrama(item) && (
                 item.type === 'movie' || 
                 (item.section && (item.section.includes('أفلام') || item.section.includes('فيلم')))
-            );
+            ));
             filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
             sectionLabel = siteTranslations[currentLang].cat_movies;
         } else if (currentMain === 'tv') {
-            filtered = movies.filter(item => 
+            filtered = movies.filter(item => !isShortDrama(item) && (
                 item.type === 'tv' || 
                 (item.section && (item.section.includes('مسلسل') || item.section.includes('مسلسلات')))
-            );
+            ));
             filtered = filtered.filter(item => !(item.section && item.section.includes('أنمي')));
             sectionLabel = siteTranslations[currentLang].cat_series;
         } else if (currentMain === 'أنمي') {
-            filtered = movies.filter(item => 
+            filtered = movies.filter(item => !isShortDrama(item) && (
                 (item.section && (item.section.includes('أنمي') || item.section.includes('كرتون'))) || 
                 (item.genres && item.genres.some(g => g.includes('أنمي') || g.includes('كرتون')))
-            );
+            ));
             sectionLabel = siteTranslations[currentLang].cat_anime;
         }
 
@@ -632,6 +655,10 @@ function setupCategoryFilter() {
             } else if (currentMain === 'أنمي') {
                 if (seriesSubBar) seriesSubBar.style.display = 'none';
                 if (subCategoriesBar) subCategoriesBar.style.display = 'flex';
+                if (yearDropdownContainer) yearDropdownContainer.style.display = 'none';
+            } else if (currentMain === 'shorts') {
+                if (seriesSubBar) seriesSubBar.style.display = 'none';
+                if (subCategoriesBar) subCategoriesBar.style.display = 'none';
                 if (yearDropdownContainer) yearDropdownContainer.style.display = 'none';
             }
 
