@@ -192,7 +192,7 @@
     <main class="content-container watch-container" style="max-width: 900px; margin-top: 20px;">
 
         <!-- أزرار اختيار السيرفرات -->
-        <div class="servers-box">
+        <div class="servers-box" id="serversBox">
             <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> <span data-i18n="servers_label">السيرفرات:</span></span>
             <button class="server-btn active" onclick="changeServer(1)">سيرفر 1 (VidLink)</button>
             <button class="server-btn" onclick="changeServer(2)">سيرفر 2 (Vidsrc)</button>
@@ -277,6 +277,7 @@
         let currentEpisode = 1;
         let activeServerNum = 1;
         let currentMovieData = null;
+        let defaultServersHtml = '';
 
         // التحكم في تشغيل إعلان Popunder على إجراءات المشاهدة بحد أقصى مرتين
         const WATCH_POP_MAX = 2;
@@ -336,24 +337,62 @@
 
         function cleanShortDescription(text) {
             if (!text) return '';
-            return text.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+            return text
+                .replace(/<br\s*\/?>/gi, ' ')
+                .replace(/&nbsp;/gi, ' ')
+                .replace(/<[^>]+>/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
         }
 
         function getShortDramaEmbedUrl(movie) {
+            const idStr = String((movie && movie.id) || currentMovieId || '').trim();
+            if (idStr.startsWith('dm_')) {
+                const rawDmId = idStr.slice(3).trim();
+                if (rawDmId) {
+                    if (activeServerNum === 2) {
+                        return `https://geo.dailymotion.com/player.html?video=${encodeURIComponent(rawDmId)}`;
+                    }
+                    return `https://www.dailymotion.com/embed/video/${encodeURIComponent(rawDmId)}`;
+                }
+            }
+            if (movie && Array.isArray(movie.streams) && movie.streams.length > 0) {
+                const streamObj = movie.streams[activeServerNum - 1] || movie.streams[0];
+                if (streamObj && streamObj.url && /^https?:\/\//i.test(streamObj.url)) {
+                    return streamObj.url;
+                }
+            }
             if (movie && movie.stream_url && /^https?:\/\//i.test(movie.stream_url)) {
                 return movie.stream_url;
             }
             if (movie && movie.embedUrl && /^https?:\/\//i.test(movie.embedUrl)) {
                 return movie.embedUrl;
             }
-            if (movie && Array.isArray(movie.streams) && movie.streams.length > 0 && movie.streams[0].url) {
-                return movie.streams[0].url;
-            }
-            const idStr = String((movie && movie.id) || currentMovieId || '');
-            if (idStr.startsWith('dm_')) {
-                return `https://geo.dailymotion.com/player.html?video=${idStr.slice(3)}`;
-            }
             return '';
+        }
+
+        function syncServersBarForMode(movie) {
+            const serversBox = document.getElementById('serversBox');
+            if (!serversBox) return;
+
+            if (!defaultServersHtml) {
+                defaultServersHtml = serversBox.innerHTML;
+            }
+
+            if (isShortDramaEntry(movie)) {
+                const hasSecondDm = String((movie && movie.id) || currentMovieId || '').trim().startsWith('dm_');
+                serversBox.innerHTML = `
+                    <span style="color: #aaa; font-size: 13px;"><i class="fa-solid fa-server"></i> <span data-i18n="servers_label">السيرفرات:</span></span>
+                    <button type="button" class="server-btn ${activeServerNum === 1 ? 'active' : ''}" onclick="changeServer(1)">سيرفر 1 (Dailymotion)</button>
+                    ${hasSecondDm ? `<button type="button" class="server-btn ${activeServerNum === 2 ? 'active' : ''}" onclick="changeServer(2)">سيرفر 2 (Geo)</button>` : ''}
+                `;
+            } else {
+                serversBox.innerHTML = defaultServersHtml;
+                document.querySelectorAll('.server-btn').forEach((btn, idx) => {
+                    if (idx + 1 === activeServerNum) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            }
         }
 
         function getActiveLang() {
@@ -435,6 +474,8 @@
         function updatePlayer() {
             const iframe = document.getElementById('videoIframe');
             if (!iframe || !currentMovieId) return;
+
+            syncServersBarForMode(currentMovieData);
 
             // إصلاح خاص بالدراما القصيرة فقط؛ بقية الأعمال تبقى كما هي تماماً
             if (isShortDramaEntry(currentMovieData)) {
@@ -538,7 +579,7 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
+        function initWatchPage() {
             let savedLang = localStorage.getItem('user_lang');
             if (!savedLang) {
                 const phoneLang = navigator.language || navigator.userLanguage || 'ar';
@@ -587,7 +628,9 @@
                     seriesControls.style.display = 'none';
                 }
 
-                fetch('movies.json')
+                syncServersBarForMode(null);
+
+                fetch('movies.json', { cache: 'no-store' })
                     .then(response => response.json())
                     .then(movies => {
                         const movie = movies.find(m => String(m.id) === String(currentMovieId));
@@ -597,6 +640,7 @@
                                 currentMovieType = 'short';
                                 if (seriesControls) seriesControls.style.display = 'none';
                             }
+                            syncServersBarForMode(movie);
                             updatePageSeoMeta(movie);
 
                             const lang = getActiveLang();
@@ -661,7 +705,13 @@
                     })
                     .catch(error => console.error("خطأ في تحميل تفاصيل الفيلم:", error));
             }
-        });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initWatchPage);
+        } else {
+            initWatchPage();
+        }
 
         function toggleFavQuick(btn, movie) {
             toggleFavorite(movie);
