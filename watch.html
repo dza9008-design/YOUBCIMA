@@ -204,7 +204,7 @@
 
         <!-- مشغل الفيديو الرئيسي -->
         <div class="video-player-box" id="playerContainer" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 12px;">
-            <iframe id="videoIframe" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+            <iframe id="videoIframe" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
         </div>
 
         <!-- لوحة اختيار الموسم والحلقة للمسلسلات -->
@@ -318,29 +318,42 @@
             }
         }
 
-        function getDirectEmbedUrl(movie) {
-            if (!movie) return '';
-            if (movie.stream_url && /^https?:\/\//i.test(movie.stream_url)) {
-                if (!movie.stream_url.includes('vidsrc.') && !movie.stream_url.includes('autoembed.cc')) {
-                    return movie.stream_url;
-                }
+        function isShortDramaEntry(movie) {
+            if (!movie && currentMovieType !== 'short' && !String(currentMovieId || '').startsWith('dm_')) {
+                return false;
             }
-            if (movie.embedUrl && /^https?:\/\//i.test(movie.embedUrl)) {
+            if (currentMovieType === 'short' || String(currentMovieId || '').startsWith('dm_')) {
+                return true;
+            }
+            if (!movie) return false;
+            return (
+                movie.type === 'short' ||
+                movie.section === 'دراما قصيرة' ||
+                movie.section === 'أفلام قصيرة' ||
+                movie.source === 'dailymotion'
+            );
+        }
+
+        function cleanShortDescription(text) {
+            if (!text) return '';
+            return text.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function getShortDramaEmbedUrl(movie) {
+            if (movie && movie.stream_url && /^https?:\/\//i.test(movie.stream_url)) {
+                return movie.stream_url;
+            }
+            if (movie && movie.embedUrl && /^https?:\/\//i.test(movie.embedUrl)) {
                 return movie.embedUrl;
             }
+            if (movie && Array.isArray(movie.streams) && movie.streams.length > 0 && movie.streams[0].url) {
+                return movie.streams[0].url;
+            }
+            const idStr = String((movie && movie.id) || currentMovieId || '');
+            if (idStr.startsWith('dm_')) {
+                return `https://geo.dailymotion.com/player.html?video=${idStr.slice(3)}`;
+            }
             return '';
-        }
-
-        function getTmdbLookupId(movie) {
-            if (movie && movie.tmdb_id) return movie.tmdb_id;
-            const rawId = String(currentMovieId || '');
-            if (/^\d+$/.test(rawId)) return rawId;
-            return '';
-        }
-
-        function getTmdbLookupType(movie) {
-            if (movie && movie.tmdb_type) return movie.tmdb_type;
-            return currentMovieType === 'tv' ? 'tv' : 'movie';
         }
 
         function getActiveLang() {
@@ -423,41 +436,40 @@
             const iframe = document.getElementById('videoIframe');
             if (!iframe || !currentMovieId) return;
 
-            const directUrl = getDirectEmbedUrl(currentMovieData);
-            if (directUrl) {
-                iframe.src = directUrl;
-                saveToHistory();
-                return;
+            // إصلاح خاص بالدراما القصيرة فقط؛ بقية الأعمال تبقى كما هي تماماً
+            if (isShortDramaEntry(currentMovieData)) {
+                const shortUrl = getShortDramaEmbedUrl(currentMovieData);
+                if (shortUrl) {
+                    iframe.src = shortUrl;
+                    saveToHistory();
+                    return;
+                }
             }
 
-            const tmdbId = getTmdbLookupId(currentMovieData);
-            const tmdbType = getTmdbLookupType(currentMovieData);
-            if (!tmdbId) return;
-
             if (activeServerNum === 1) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://vidlink.pro/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
-                    : `https://vidlink.pro/movie/${tmdbId}`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://vidlink.pro/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://vidlink.pro/movie/${currentMovieId}`;
             } else if (activeServerNum === 2) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${currentSeason}&episode=${currentEpisode}`
-                    : `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://vidsrc.me/embed/tv?tmdb=${currentMovieId}&season=${currentSeason}&episode=${currentEpisode}`
+                    : `https://vidsrc.me/embed/movie?tmdb=${currentMovieId}`;
             } else if (activeServerNum === 3) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://embed.su/embed/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
-                    : `https://embed.su/embed/movie/${tmdbId}`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://embed.su/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://embed.su/embed/movie/${currentMovieId}`;
             } else if (activeServerNum === 4) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://player.autoembed.cc/embed/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
-                    : `https://player.autoembed.cc/embed/movie/${tmdbId}`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://player.autoembed.cc/embed/tv/${currentMovieId}/${currentSeason}/${currentEpisode}`
+                    : `https://player.autoembed.cc/embed/movie/${currentMovieId}`;
             } else if (activeServerNum === 5) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://2embed.cc/embedtv/${tmdbId}&s=${currentSeason}&e=${currentEpisode}`
-                    : `https://2embed.cc/embed/${tmdbId}`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://2embed.cc/embedtv/${currentMovieId}&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://2embed.cc/embed/${currentMovieId}`;
             } else if (activeServerNum === 6) {
-                iframe.src = tmdbType === 'tv'
-                    ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`
-                    : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`;
+                iframe.src = currentMovieType === 'tv'
+                    ? `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1&s=${currentSeason}&e=${currentEpisode}`
+                    : `https://multiembed.mov/?video_id=${currentMovieId}&tmdb=1`;
             }
 
             saveToHistory();
@@ -518,8 +530,10 @@
 
             const metaDesc = document.getElementById('metaDesc');
             if (metaDesc) {
-                const overviewText = movie.overview || '';
-                const combined = overviewText ? `${pageTitle} - ${overviewText}` : pageTitle;
+                const rawOverview = isShortDramaEntry(movie)
+                    ? cleanShortDescription(movie.overview || '')
+                    : (movie.overview || '');
+                const combined = rawOverview ? `${pageTitle} - ${rawOverview}` : pageTitle;
                 metaDesc.setAttribute('content', combined.slice(0, 160));
             }
         }
@@ -579,19 +593,10 @@
                         const movie = movies.find(m => String(m.id) === String(currentMovieId));
                         if (movie) {
                             currentMovieData = movie;
-                            if (movie.type) {
-                                currentMovieType = movie.type;
-                            } else if (movie.section === 'دراما قصيرة' || movie.section === 'أفلام قصيرة') {
+                            if (isShortDramaEntry(movie)) {
                                 currentMovieType = 'short';
+                                if (seriesControls) seriesControls.style.display = 'none';
                             }
-
-                            if (currentMovieType === 'tv' && seriesControls) {
-                                seriesControls.style.display = 'flex';
-                                populateSeasonEpisodeSelects();
-                            } else if (seriesControls) {
-                                seriesControls.style.display = 'none';
-                            }
-
                             updatePageSeoMeta(movie);
 
                             const lang = getActiveLang();
@@ -600,7 +605,12 @@
                             const titleEl = document.getElementById('movieTitle');
                             const descEl = document.getElementById('movieDesc');
                             if (titleEl) titleEl.textContent = movie.title || "بدون عنوان";
-                            if (descEl) descEl.textContent = movie.overview || translations.no_overview || "لا يوجد وصف متوفر.";
+                            if (descEl) {
+                                const descText = isShortDramaEntry(movie)
+                                    ? cleanShortDescription(movie.overview)
+                                    : movie.overview;
+                                descEl.textContent = descText || translations.no_overview || "لا يوجد وصف متوفر.";
+                            }
 
                             const badgesContainer = document.getElementById('metaBadges');
                             if (badgesContainer) {
@@ -623,12 +633,9 @@
                             movies.filter(m => String(m.id) !== String(currentMovieId)).forEach(m => {
                                 const card = document.createElement('div');
                                 card.className = 'movie-card';
-                                const itemType = m.type || ((m.section === 'دراما قصيرة' || m.section === 'أفلام قصيرة') ? 'short' : 'movie');
-                                const badgeText = itemType === 'short'
-                                    ? (lang === 'fr' ? 'Court' : lang === 'en' ? 'Short' : 'قصير')
-                                    : ((itemType === 'tv')
-                                        ? (lang === 'fr' ? 'Série' : lang === 'en' ? 'Series' : 'مسلسل')
-                                        : 'HD');
+                                const badgeText = (m.type === 'tv')
+                                    ? (lang === 'fr' ? 'Série' : lang === 'en' ? 'Series' : 'مسلسل')
+                                    : 'HD';
                                 const favActive = isFavorite(m.id) ? 'active' : '';
                                 const safeMovieJson = JSON.stringify(m)
                                     .replace(/&/g, '&amp;')
@@ -646,7 +653,7 @@
                                     <div class="movie-title">${m.title}</div>
                                 `;
                                 card.onclick = () => {
-                                    window.location.href = `watch.html?id=${m.id}&type=${itemType}`;
+                                    window.location.href = `watch.html?id=${m.id}&type=${m.type || 'movie'}`;
                                 };
                                 relatedContainer.appendChild(card);
                             });
