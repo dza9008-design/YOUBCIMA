@@ -74,6 +74,9 @@ EXCLUDED_KEYWORDS = (
     "doctor", "clinic", "dental", "medical", "health"
 )
 
+# قائمة اختيارية لأعمال دراما قصيرة بروابط تضمين أو فيديو مباشرة تعمل بدون حظر
+CUSTOM_SHORT_DRAMAS = []
+
 
 def clean_html_text(text):
     if not text:
@@ -135,8 +138,61 @@ def is_stream_working(url, timeout=6):
         return False
 
 
+def is_embed_accessible(url, timeout=6):
+    if not url or not url.startswith(("http://", "https://")):
+        return False
+    try:
+        resp = requests.get(
+            url, headers=HEADERS, timeout=timeout, allow_redirects=True, stream=True
+        )
+        frame_options = (resp.headers.get("X-Frame-Options") or "").upper()
+        csp = (resp.headers.get("Content-Security-Policy") or "").lower()
+        body_snippet = ""
+        try:
+            body_snippet = resp.content[:2048].decode("utf-8", errors="ignore").lower()
+        except Exception:
+            body_snippet = ""
+        resp.close()
+
+        if resp.status_code >= 400:
+            return False
+        if "DENY" in frame_options or "SAMEORIGIN" in frame_options:
+            return False
+        if "frame-ancestors 'none'" in csp:
+            return False
+        if "embed disabled" in body_snippet or "video is private" in body_snippet:
+            return False
+        return True
+    except requests.RequestException:
+        return False
+
+
 def verify_and_filter_entry(entry):
-    if entry.get("source") == "dailymotion" and entry.get("stream_url"):
+    if entry.get("source") == "direct" and entry.get("stream_url"):
+        return entry
+
+    if entry.get("type") == "short" or entry.get("source") == "dailymotion":
+        dm_id = str(entry.get("id") or "").removeprefix("dm_").strip()
+        candidate_urls = []
+        if dm_id:
+            candidate_urls.append(f"https://www.dailymotion.com/embed/video/{dm_id}")
+            candidate_urls.append(f"https://geo.dailymotion.com/player.html?video={dm_id}")
+        if entry.get("stream_url"):
+            candidate_urls.append(entry["stream_url"])
+
+        working_short_streams = []
+        for idx, u in enumerate(dict.fromkeys(candidate_urls), start=1):
+            if is_embed_accessible(u):
+                working_short_streams.append({
+                    "server": f"سيرفر الدراما العمودية {idx}",
+                    "url": u,
+                })
+
+        if not working_short_streams:
+            return None
+
+        entry["streams"] = working_short_streams
+        entry["stream_url"] = working_short_streams[0]["url"]
         return entry
 
     candidates = build_candidate_streams(entry["type"], entry["id"])
@@ -284,7 +340,7 @@ def fetch_vertical_dramas(queries=None, limit_per_query=20):
                     else str(datetime.date.today().year)
                 )
 
-                embed_url = f"https://geo.dailymotion.com/player.html?video={dm_id}"
+                embed_url = f"https://www.dailymotion.com/embed/video/{dm_id}"
 
                 entry = {
                     "id": f"dm_{dm_id}",
@@ -387,6 +443,10 @@ def main():
     vertical_dramas = fetch_vertical_dramas()
     print(f"🎬 تم جلب {len(vertical_dramas)} عمل من الدراما العمودية.")
     all_media.extend(vertical_dramas)
+
+    if CUSTOM_SHORT_DRAMAS:
+        print(f"➕ جاري إضافة {len(CUSTOM_SHORT_DRAMAS)} عمل دراما قصيرة مخصص...")
+        all_media.extend(CUSTOM_SHORT_DRAMAS)
 
     unique_media = list(
         {f"{item['type']}_{item['id']}": item for item in all_media}.values()
