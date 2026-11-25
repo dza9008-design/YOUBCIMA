@@ -563,6 +563,66 @@
             populateSeasonEpisodeSelects();
         }
 
+        function updateJsonLdSchema(movie) {
+            const safeTitle = movie.title || 'مشاهدة العرض';
+            const cleanDesc = cleanShortDescription(movie.overview || '') || `مشاهدة ${safeTitle} بجودة عالية على Youb Cima.`;
+            const isShort = isShortDramaEntry(movie);
+            const schemaType = isShort ? 'VideoObject' : (currentMovieType === 'tv' ? 'TVSeries' : 'Movie');
+
+            const canonicalUrl = `${window.location.origin}/watch.html?id=${encodeURIComponent(movie.id || currentMovieId)}&type=${encodeURIComponent(isShort ? 'short' : currentMovieType)}`;
+
+            let canonicalLink = document.querySelector('link[rel="canonical"]');
+            if (!canonicalLink) {
+                canonicalLink = document.createElement('link');
+                canonicalLink.setAttribute('rel', 'canonical');
+                document.head.appendChild(canonicalLink);
+            }
+            canonicalLink.setAttribute('href', canonicalUrl);
+
+            const schemaData = {
+                "@context": "https://schema.org",
+                "@type": schemaType,
+                "name": safeTitle,
+                "description": cleanDesc,
+                "url": canonicalUrl
+            };
+
+            if (movie.poster && /^https?:\/\//i.test(movie.poster)) {
+                schemaData.image = movie.poster;
+                if (isShort) {
+                    schemaData.thumbnailUrl = [movie.poster];
+                }
+            }
+
+            if (movie.year) {
+                schemaData.datePublished = String(movie.year);
+            }
+
+            const ratingNum = parseFloat(movie.rating);
+            if (!Number.isNaN(ratingNum) && ratingNum > 0) {
+                schemaData.aggregateRating = {
+                    "@type": "AggregateRating",
+                    "ratingValue": Math.min(ratingNum, 10),
+                    "bestRating": 10,
+                    "ratingCount": 1
+                };
+            }
+
+            const shortEmbed = isShort ? getShortDramaEmbedUrl(movie) : '';
+            if (shortEmbed) {
+                schemaData.embedUrl = shortEmbed;
+            }
+
+            let schemaScript = document.getElementById('jsonLdSchema');
+            if (!schemaScript) {
+                schemaScript = document.createElement('script');
+                schemaScript.id = 'jsonLdSchema';
+                schemaScript.type = 'application/ld+json';
+                document.head.appendChild(schemaScript);
+            }
+            schemaScript.textContent = JSON.stringify(schemaData);
+        }
+
         function updatePageSeoMeta(movie) {
             const safeTitle = movie.title || 'مشاهدة العرض';
             const yearText = movie.year ? ` (${movie.year})` : '';
@@ -577,6 +637,8 @@
                 const combined = rawOverview ? `${pageTitle} - ${rawOverview}` : pageTitle;
                 metaDesc.setAttribute('content', combined.slice(0, 160));
             }
+
+            updateJsonLdSchema(movie);
         }
 
         function initWatchPage() {
