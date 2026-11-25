@@ -50,20 +50,22 @@ GENRES_MAP = {
     10765: "خيال علمي وفانتازيا",
 }
 
-# كلمات البحث لجلب الدراما القصيرة من Dailymotion مجاناً
-SHORT_DRAMA_QUERIES = [
+# كلمات بحث مخصصة لجلب الدراما العمودية والحلقات القصيرة من Dailymotion
+VERTICAL_DRAMA_QUERIES = [
+    "دراما عمودية",
+    "مسلسل عمودي",
     "دراما قصيرة مترجمة",
-    "مسلسل قصير مترجم",
     "مسلسل قصير مدبلج",
-    "DramaBox مترجم",
-    "short drama arabic sub",
+    "vertical drama",
+    "short drama sub",
 ]
 
+VERTICAL_KEYWORDS = (
+    "عمود", "قصير", "دراما", "حلقة", "حلقات", "vertical", "short", "drama", "ep", "episode"
+)
 
-def determine_section(item, media_type, is_short=False):
-    if is_short:
-        return "دراما قصيرة"
 
+def determine_section(item, media_type):
     lang = item.get("original_language", "")
     genres = item.get("genre_ids", [])
 
@@ -116,12 +118,10 @@ def is_stream_working(url, timeout=6):
 
 
 def verify_and_filter_entry(entry):
-    # أعمال Dailymotion تملك رابط تضمين جاهز ولا تحتاج فحص سيرفرات TMDB
     if entry.get("source") == "dailymotion" and entry.get("stream_url"):
         return entry
 
-    tmdb_lookup_type = entry.get("tmdb_type") or entry["type"]
-    candidates = build_candidate_streams(tmdb_lookup_type, entry["id"])
+    candidates = build_candidate_streams(entry["type"], entry["id"])
     working_streams = [s for s in candidates if is_stream_working(s["url"])]
 
     if not working_streams:
@@ -132,14 +132,7 @@ def verify_and_filter_entry(entry):
     return entry
 
 
-def fetch_content(
-    media_type,
-    language=None,
-    pages=5,
-    sort_by="popularity.desc",
-    is_short=False,
-    max_runtime=None,
-):
+def fetch_content(media_type, language=None, pages=5, sort_by="popularity.desc"):
     results = []
     endpoint = f"{BASE_URL}/discover/{media_type}"
 
@@ -153,9 +146,6 @@ def fetch_content(
         }
         if language:
             params["with_original_language"] = language
-        if max_runtime:
-            params["with_runtime.lte"] = max_runtime
-            params["with_runtime.gte"] = 3
 
         try:
             response = requests.get(endpoint, params=params, timeout=10)
@@ -167,12 +157,10 @@ def fetch_content(
                     if not item.get("poster_path"):
                         continue
 
-                    section = determine_section(item, media_type, is_short=is_short)
+                    section = determine_section(item, media_type)
                     genre_names = [
                         GENRES_MAP.get(g, "منوع") for g in item.get("genre_ids", [])
                     ]
-                    if is_short and "دراما قصيرة" not in genre_names:
-                        genre_names.append("دراما قصيرة")
 
                     orig_title = (
                         item.get("original_title") or item.get("original_name") or ""
@@ -184,12 +172,9 @@ def fetch_content(
                     else:
                         final_title = orig_title if orig_title else ar_title
 
-                    entry_type = "short" if is_short else media_type
-
                     entry = {
                         "id": item["id"],
-                        "type": entry_type,
-                        "tmdb_type": media_type,
+                        "type": media_type,
                         "title": final_title,
                         "original_title": orig_title,
                         "poster": f"https://image.tmdb.org/t/p/w500{item['poster_path']}",
@@ -223,9 +208,9 @@ def fetch_content(
     return results
 
 
-def fetch_dailymotion_shorts(queries=None, limit_per_query=15):
+def fetch_vertical_dramas(queries=None, limit_per_query=20):
     if queries is None:
-        queries = SHORT_DRAMA_QUERIES
+        queries = VERTICAL_DRAMA_QUERIES
 
     results = []
     seen_ids = set()
@@ -236,8 +221,8 @@ def fetch_dailymotion_shorts(queries=None, limit_per_query=15):
             "search": q,
             "fields": fields,
             "limit": limit_per_query,
-            "sort": "relevance",
-            "flags": "no_live,verified",
+            "sort": "recent",
+            "flags": "no_live",
         }
         try:
             resp = requests.get(DAILYMOTION_API_URL, params=params, headers=HEADERS, timeout=10)
@@ -252,21 +237,25 @@ def fetch_dailymotion_shorts(queries=None, limit_per_query=15):
                     continue
 
                 duration = vid.get("duration") or 0
-                # استبعاد المقاطع القصيرة جداً (إعلانات أقل من دقيقة)
-                if duration < 60:
+                # استبعاد الإعلانات القصيرة جداً والمقاطع الطويلة جداً غير المناسبة للدراما القصيرة
+                if duration < 45 or duration > 5400:
                     continue
 
                 poster = vid.get("thumbnail_720_url") or vid.get("thumbnail_480_url")
                 if not poster:
                     continue
 
-                seen_ids.add(dm_id)
-                title = (vid.get("title") or "دراما قصيرة").strip()
+                title = (vid.get("title") or "").strip()
                 desc = (vid.get("description") or "").strip()
-                if len(desc) > 280:
-                    desc = desc[:277] + "..."
-                if not desc:
-                    desc = f"مشاهدة {title} بجودة عالية على Youb Cima."
+                haystack = f"{title} {desc}".lower()
+
+                if not title or not any(kw in haystack for kw in VERTICAL_KEYWORDS):
+                    continue
+
+                seen_ids.add(dm_id)
+                short_desc = desc[:277] + "..." if len(desc) > 280 else desc
+                if not short_desc:
+                    short_desc = f"مشاهدة {title} ضمن قسم الدراما القصيرة على Youb Cima."
 
                 created_ts = vid.get("created_time")
                 year_str = (
@@ -285,15 +274,15 @@ def fetch_dailymotion_shorts(queries=None, limit_per_query=15):
                     "original_title": title,
                     "poster": poster,
                     "backdrop": poster,
-                    "rating": 8.0,
+                    "rating": 8.2,
                     "year": year_str,
-                    "overview": desc,
+                    "overview": short_desc,
                     "section": "دراما قصيرة",
-                    "genres": ["دراما قصيرة", "دراما"],
+                    "genres": ["دراما قصيرة", "دراما عمودية", "دراما"],
                     "stream_url": embed_url,
                     "streams": [
                         {
-                            "server": "سيرفر الدراما القصيرة (Dailymotion)",
+                            "server": "سيرفر الدراما العمودية (Dailymotion)",
                             "url": embed_url,
                         }
                     ],
@@ -357,39 +346,27 @@ def main():
     all_media = []
 
     tasks = [
-        ("movie", "en", 10, "popularity.desc", False, None),
-        ("movie", "en", 5, "vote_count.desc", False, None),
-        ("tv", "en", 10, "popularity.desc", False, None),
-        ("movie", "ar", 4, "popularity.desc", False, None),
-        ("tv", "ar", 4, "popularity.desc", False, None),
-        ("tv", "tr", 6, "popularity.desc", False, None),
-        ("movie", "tr", 3, "popularity.desc", False, None),
-        ("tv", "ko", 6, "popularity.desc", False, None),
-        ("movie", "ko", 4, "popularity.desc", False, None),
-        ("tv", "ja", 6, "popularity.desc", False, None),
-        # أفلام قصيرة من TMDB (أقل من 40 دقيقة)
-        ("movie", "en", 3, "popularity.desc", True, 40),
-        ("movie", "ko", 2, "popularity.desc", True, 40),
+        ("movie", "en", 10, "popularity.desc"),
+        ("movie", "en", 5, "vote_count.desc"),
+        ("tv", "en", 10, "popularity.desc"),
+        ("movie", "ar", 4, "popularity.desc"),
+        ("tv", "ar", 4, "popularity.desc"),
+        ("tv", "tr", 6, "popularity.desc"),
+        ("movie", "tr", 3, "popularity.desc"),
+        ("tv", "ko", 6, "popularity.desc"),
+        ("movie", "ko", 4, "popularity.desc"),
+        ("tv", "ja", 6, "popularity.desc"),
     ]
 
     print("🚀 جاري سحب وتصنيف الأعمال المتنوعة مع حظر المحتوى الإباحي...")
-    for m_type, lang, pages, sort_by, is_short, max_rt in tasks:
+    for m_type, lang, pages, sort_by in tasks:
         print(f"⏳ جاري سحب [{m_type}] بلغة [{lang}] بترتيب [{sort_by}]...")
-        all_media.extend(
-            fetch_content(
-                m_type,
-                lang,
-                pages,
-                sort_by,
-                is_short=is_short,
-                max_runtime=max_rt,
-            )
-        )
+        all_media.extend(fetch_content(m_type, lang, pages, sort_by))
 
-    print("🎬 جاري سحب الدراما القصيرة من Dailymotion مجاناً...")
-    dm_shorts = fetch_dailymotion_shorts()
-    print(f"📦 تم جلب {len(dm_shorts)} عمل من Dailymotion.")
-    all_media.extend(dm_shorts)
+    print("📱 جاري جلب أعمال الدراما العمودية من Dailymotion...")
+    vertical_dramas = fetch_vertical_dramas()
+    print(f"🎬 تم جلب {len(vertical_dramas)} عمل من الدراما العمودية.")
+    all_media.extend(vertical_dramas)
 
     unique_media = list(
         {f"{item['type']}_{item['id']}": item for item in all_media}.values()
